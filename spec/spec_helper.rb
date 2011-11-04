@@ -2,6 +2,12 @@
 
 require 'round_table'
 
+module RoundTable
+  module Mock
+    
+  end # module Mock
+end # module RoundTable
+
 ###########################################################################
 # CUSTOM MATCHERS
 ###########################################################################

@@ -16,6 +16,4 @@ controller = RoundTable::Controllers::TerminalController.new
 # Begin Program
 puts "Welcome to the Round Table interactive adventure platform"
 
-controller.print "> "
-input = controller.gets.chomp
-controller.puts "You said #{input}!"
+controller.io_loop

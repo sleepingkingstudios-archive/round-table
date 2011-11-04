@@ -20,7 +20,8 @@ describe RoundTable::Controllers::TextController do
     input = double('input_stream')
     input.stub(:gets)
     output = double('output_stream')
-    output.stub(:print).stub(:puts)
+    output.stub(:print)
+    output.stub(:puts)
     output.should_receive(:print).with("> ")
     output.should_receive(:puts).with(message)
     
