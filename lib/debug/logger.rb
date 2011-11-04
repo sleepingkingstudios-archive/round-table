@@ -31,6 +31,14 @@ module RoundTable::Debug
       self.output    = config[:output]
     end # method initialize
     
+    def method_missing(method, *args, &block)
+      if LogLevels.include? method.to_s
+        self.log(method, *args, &block)
+      else
+        super
+      end # if-else
+    end # method method_missing
+    
     ########################
     # Accessors and Mutators
     

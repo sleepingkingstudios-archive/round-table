@@ -112,4 +112,14 @@ describe RoundTable::Debug::Logger do
       subject.log(level, "This is a(n) #{level} message.")
     end # each
   end # it passes messages with a level at or above the threshold
+  
+  it "accepts a concise syntax for logging messages by level" do
+    mock_io = double('mock_io')
+    mock_io.should_receive(:puts).exactly(log_levels.count)
+    
+    subject.output = mock_io
+    log_levels.each do |level|
+      subject.send level, "This is a(n) #{level} message."
+    end # each
+  end # it accepts a concise syntax for logging messages by level
 end # spec Logger
