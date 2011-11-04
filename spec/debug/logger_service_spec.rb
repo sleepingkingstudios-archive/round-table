@@ -6,7 +6,7 @@ require 'debug/logger_service'
 
 RSpec::Matchers.define :be_a_logger do
   match do |actual|
-    actual.is_a? PocketMonsters::Debug::Logger
+    actual.is_a? RoundTable::Debug::Logger
   end # match
   
   failure_message_for_should do |actual|
@@ -18,8 +18,8 @@ RSpec::Matchers.define :be_a_logger do
   end # failure_message
 end # define be_a_logger
 
-describe PocketMonsters::Debug::LoggerService do
-  include PocketMonsters::Debug
+describe RoundTable::Debug::LoggerService do
+  include RoundTable::Debug
   
   subject { Object.new.extend LoggerService }
   

@@ -1,6 +1,6 @@
 # spec/spec_helper.rb
 
-require 'pocket_monsters'
+require 'round_table'
 
 ###########################################################################
 # CUSTOM MATCHERS

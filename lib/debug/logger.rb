@@ -2,7 +2,7 @@
 
 require 'debug/debug'
 
-module PocketMonsters::Debug
+module RoundTable::Debug
   class Logger
     LogLevels = %w(debug info warning error fatal panic)
     
@@ -67,4 +67,4 @@ module PocketMonsters::Debug
       @output.puts str
     end # method log
   end # class Logger
-end # module PocketMonsters::Debug
+end # module RoundTable::Debug

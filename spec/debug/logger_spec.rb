@@ -3,10 +3,10 @@
 require 'spec_helper'
 require 'debug/logger'
 
-describe PocketMonsters::Debug::Logger do
-  include PocketMonsters::Debug
+describe RoundTable::Debug::Logger do
+  include RoundTable::Debug
   
-  ############
+  ############RoundTable
   # Log Levels
   
   log_levels = %w(debug info warning error fatal panic)

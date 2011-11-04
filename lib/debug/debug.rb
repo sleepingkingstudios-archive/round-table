@@ -1,9 +1,9 @@
 # lib/debug/debug.rb
 
-require 'pocket_monsters'
+require 'round_table'
 
-module PocketMonsters
+module RoundTable
   module Debug
     
   end # module Debug
-end # module PocketMonsters
+end # module RoundTable

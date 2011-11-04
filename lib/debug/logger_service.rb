@@ -3,7 +3,7 @@
 require 'debug/debug'
 require 'debug/logger'
 
-module PocketMonsters::Debug
+module RoundTable::Debug
   module LoggerService
     def logger
       StoredLogger.logger
@@ -25,4 +25,4 @@ module PocketMonsters::Debug
       self.logger = Logger.new
     end # class StoredLogger
   end # module LoggerService
-end # module PocketMonsters::Debug
+end # module RoundTable::Debug
