@@ -6,7 +6,7 @@ require 'debug/logger'
 describe RoundTable::Debug::Logger do
   include RoundTable::Debug
   
-  ############RoundTable
+  ############
   # Log Levels
   
   log_levels = %w(debug info warning error fatal panic)

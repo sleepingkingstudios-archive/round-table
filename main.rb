@@ -1,9 +1,21 @@
 # main.rb
 
-# set up load path
+######################
+# Set up the Load Path
+
 $LOAD_PATH << (File.expand_path(File.dirname __FILE__) + "/lib")
 
-require 'pocket_monsters'
+require 'controllers/terminal_controller'
 
-# begin program
+#####################################
+# Instantiate Controller and Contexts
+
+controller = RoundTable::Controllers::TerminalController.new
+
+###############
+# Begin Program
 puts "Welcome to the Round Table interactive adventure platform"
+
+controller.print "> "
+input = controller.gets.chomp
+controller.puts "You said #{input}!"
