@@ -42,6 +42,17 @@ describe RoundTable::Events::EventDispatcher do
     subject.add_listener :event_type, @callback
   end # it can add event listeners
   
+  it "returns an EventCallback on a successfully added listener, or nil on a failure" do
+    subject.add_listener(:event_type, @callback).should be_a EventCallback
+    subject.add_listener(:event_type, @callback).should be nil
+  end # it returns an EventCallback ...
+  
+  it "passes through custom data to the EventCallback" do
+    callback = subject.add_listener(:custom_event, @callback, :foo => :bar)
+    callback.data[:event_type].should be :custom_event
+    callback.data[:foo].should be :bar
+  end # it passes through custom data ...
+  
   it "triggers callbacks on dispatched events" do
     subject.add_listener :event_type, @callback
     subject.add_listener :other_type, @callback
@@ -51,15 +62,22 @@ describe RoundTable::Events::EventDispatcher do
   end # it triggers callbacks on dispatched events
   
   it "can add generic listeners which trigger on all events" do
-    subject.add_listener :*, @callback
-    subject.add_generic_listener @callback
+    other_callback = double('callable')
+    other_callback.stub(:call)
     
-    @callback.should_receive(:call).exactly(4)
+    subject.add_listener :*, @callback
+    subject.add_generic_listener other_callback
+    
+    @callback.should_receive(:call).exactly(2)
+    other_callback.should_receive(:call).exactly(2)
     subject.dispatch_event @event
     subject.dispatch_event Event.new :other_type
   end # it can add generic listeners which trigger on all events
   
   it "can remove event listeners" do
+    expect { subject.remove_listener }.to raise_error ArgumentError
+    expect { subject.remove_listener :event_type }.to raise_error ArgumentError
+    
     other_callback = double('mock_callable')
     other_callback.stub(:call)
     
@@ -74,6 +92,20 @@ describe RoundTable::Events::EventDispatcher do
     subject.dispatch_event @event
     subject.dispatch_event Event.new :other_type
   end # it can remove event listeners
+  
+  it "can remove event listeners matching a block" do
+    other_callback = double('mock_callable')
+    other_callback.stub(:call)
+    
+    subject.add_listener :event_type, @callback
+    subject.add_listener :other_type, other_callback
+    subject.remove_listeners { |callback| callback.data[:event_type] == :other_type }
+    @callback.should_receive(:call)
+    other_callback.should_not_receive(:call)
+    
+    subject.dispatch_event @event
+    subject.dispatch_event Event.new :other_type
+  end # it can remove ... matching a block
   
   it "can remove generic event listeners" do
     other_callback = double('mock_callable')

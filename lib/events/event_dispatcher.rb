@@ -29,18 +29,24 @@ module RoundTable::Events
     
     def add_listener(event_type, callback, params = {})
       raise ArgumentError.new("expected parameter to implement :call") unless callback.respond_to? :call
+      params.update({ :event_type => event_type })
       
       # lazy initialize the listener registry and callbacks
       @listener_registry ||= Hash.new
       callbacks = @listener_registry[event_type] || Array.new
       
       callback_wrapper = EventCallback.new callback, params
-      callbacks << callback_wrapper
-      callbacks.sort! do |u, v|
-        # reverse sort
-        v <=> u
-      end # sort!
-      @listener_registry[event_type] = callbacks
+      if callbacks.include? callback_wrapper
+        return
+      else      
+        callbacks << callback_wrapper
+        callbacks.sort! do |u, v|
+          # reverse sort
+          v <=> u
+        end # sort!
+        @listener_registry[event_type] = callbacks
+        callback_wrapper
+      end # if-else
     end # method add_listener
     
     def add_generic_listener(callback, params = {})
@@ -52,13 +58,23 @@ module RoundTable::Events
       
       callbacks = @listener_registry[event_type]
       return unless callbacks.respond_to? :delete
-      
+
       callbacks.each do |callback_wrapper|
         if callback_wrapper.callback == callback
           callbacks.delete callback_wrapper
         end # if
       end # each
     end # method remove_listener
+    
+    def remove_listeners(&block)
+      return unless block_given? && @listener_registry.respond_to?(:[])
+      
+      @listener_registry.each do |event_type, callbacks|
+        callbacks.each do |callback|
+          callbacks.delete callback if block.call(callback)
+        end # each
+      end # each
+    end # method remove_listeners
     
     def remove_generic_listener(callback)
       self.remove_listener :*, callback

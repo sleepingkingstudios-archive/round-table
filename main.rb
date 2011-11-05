@@ -11,8 +11,8 @@ require 'controllers/contexts/abstract_context'
 #####################################
 # Instantiate Controller and Contexts
 
-controller = RoundTable::Controllers::TerminalController.new
 context = RoundTable::Controllers::Contexts::AbstractContext.new
+controller = RoundTable::Controllers::TerminalController.new context
 
 ###############
 # Begin Program

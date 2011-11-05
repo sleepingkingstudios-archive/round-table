@@ -11,12 +11,16 @@ module RoundTable::Events
       raise ArgumentError.new("expected parameter to implement :call") unless callback.respond_to? :call
       
       @callback = callback
-      self.priority = params[:priority]
+      self.priority = params.delete :priority
+      
+      @data = Hash.new
+      @data.update(params) if params.is_a? Hash
     end # method initialize
     
-    attr_reader :callback
+    attr_reader :callback, :data
     
     def ==(other)
+      # return false unless other.is_a? self.class
       return self.callback == other.callback && self.priority == other.priority
     end # ==
     

@@ -81,4 +81,13 @@ describe RoundTable::Events::EventCallback do
     callbacks = [one, two, zero, last, first]
     callbacks.sort# .should eq([first, zero, one, two, last])
   end # it can be sorted by priority
+  
+  it "has custom data" do
+    subject = EventCallback.new @callback, :priority => 7, :foo => "bar"
+    subject.data[:priority].should be nil
+    subject.data[:foo].should == "bar"
+    
+    subject.data[:baz] = "bizzle"
+    subject.data[:baz].should == "bizzle"
+  end # it has custom data
 end # describe EventCallback
