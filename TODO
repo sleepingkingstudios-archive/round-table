@@ -1,0 +1,16 @@
+TODO
+
+Short-Term:
+- implement event bubbling
+- finish implementing actions in TextContext
+
+Mid-Term:
+- develop Round Table modules (aka Knights?) that provide data/scenarios and
+  additional related functionality e.g. specialized controllers
+  - use similar structure to Rails plugins, e.g. modules/<knight>/init.rb
+
+Long-Term:
+- for exploration/overworld controller, develop ActionResponder class that can
+  respond to a set of actions, e.g. a door might respond to open, listen, and
+  break.
+

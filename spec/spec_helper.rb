@@ -10,16 +10,17 @@ module RoundTable
   end # module Mock
 end # module RoundTable
 
-# set up logging
-include RoundTable::Debug
-include LoggerService
+################
+# Set up Logging
+
+include RoundTable::Debug::LoggerService
 
 file_path = "#{Dir.pwd}/log/log_spec.txt"
 File.new(file_path, "w+") unless File.exists?(file_path)
 File.open(file_path, "w+") { |file| file.truncate(0) }
 
-logger = FileLogger.new file_path
-LoggerService::StoredLogger.logger = logger
+logger = RoundTable::Debug::FileLogger.new file_path
+RoundTable::Debug::LoggerService::StoredLogger.logger = logger
 
 logger.format = "\n\n%m"
 logger.info "Running spec_helper..."
