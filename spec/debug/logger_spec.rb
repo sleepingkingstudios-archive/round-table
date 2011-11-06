@@ -50,10 +50,19 @@ describe RoundTable::Debug::Logger do
   end # method mock_io_expecting
   
   it "logs strings" do
-    message = "This is a debug message."
+    debug_message = "This is a debug message."
+    info_message  = "This is an info message."
+    warn_message  = "This is a warning message."
     
-    subject.output = mock_io_expecting(/#{message}/)
-    subject.log(:debug, message)
+    mock = double('mock_io')
+    mock.should_receive(:puts).with(/#{debug_message}/)
+    mock.should_receive(:puts).with(/#{info_message}/)
+    mock.should_receive(:puts).with(/#{warn_message}/)
+    subject.output = mock
+    
+    subject.log(:debug,   debug_message)
+    subject.log(:info,    info_message)
+    subject.log(:warning, warn_message)
   end # it logs strings
   
   it "can format the logged message" do

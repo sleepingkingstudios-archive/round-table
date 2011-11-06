@@ -1,12 +1,29 @@
 # spec/spec_helper.rb
 
 require 'round_table'
+require 'debug/file_logger'
+require 'debug/logger_service'
 
 module RoundTable
   module Mock
     
   end # module Mock
 end # module RoundTable
+
+# set up logging
+include RoundTable::Debug
+include LoggerService
+
+file_path = "#{Dir.pwd}/log/log_spec.txt"
+File.new(file_path, "w+") unless File.exists?(file_path)
+File.open(file_path, "w+") { |file| file.truncate(0) }
+
+logger = FileLogger.new file_path
+LoggerService::StoredLogger.logger = logger
+
+logger.format = "\n\n%m"
+logger.info "Running spec_helper..."
+logger.format = "%L %m"
 
 ###########################################################################
 # CUSTOM MATCHERS
