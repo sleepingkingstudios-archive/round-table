@@ -1,13 +1,14 @@
 # lib/controllers/contexts/abstract_context.rb
 
 require 'controllers/contexts/contexts'
+require 'controllers/contexts/action_performer'
 require 'debug/logger_service'
 require 'events/event_dispatcher'
 require 'util/text_processor'
 require 'util/tree_collection'
 
 module RoundTable::Controllers::Contexts
-  class AbstractContext
+  class AbstractContext < ActionPerformer
     include RoundTable::Debug::LoggerService
     include RoundTable::Events
     include RoundTable::Events::EventDispatcher
@@ -33,14 +34,31 @@ module RoundTable::Controllers::Contexts
     end # method gets
     
     def puts(string)
-      dispatch_event Event.new :text_output, :text => string
+      dispatch_event Event.new :text_output, :text => self.break_text(string, 80)
     end # method puts
+    
+    ###################
+    # Executing Actions
+    
+    def missing_action(action, *tokens)
+      if self.root?
+        self.puts "I'm sorry, I don't recognize that action.\n\nFor a list" +
+          " of all available actions, type \"what\". For information on an" +
+          " action, type the action followed by \"help\". For general" +
+          " information, type \"help\"."
+      else
+        self.parent.execute_action action, *tokens
+      end # if-else
+    end # method missing_action
     
     #######################
     # Parsing Input Strings
     
     def parse(string)
-      # logger.debug "#{self} parse(): string = \"#{string}\""
+      tokens = tokenize string
+      action = tokens.shift
+      
+      self.execute_action action, tokens
     end # method parse
   end # class AbstractContext
 end # module RoundTable::Controllers::Contexts

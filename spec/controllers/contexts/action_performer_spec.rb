@@ -44,4 +44,22 @@ describe RoundTable::Controllers::Contexts::ActionPerformer do
     
     subject.list_own_actions.should eq actions.sort
   end # it can list actions ...
+  
+  it "can execute actions" do
+    mock_object = double('mock')
+    mock_object.stub(:test) do |*args| end
+    mock_object.should_receive(:test)# .with(:foo, :bar)
+    
+    subject.class.instance_eval {
+      action :do_something do |*args|
+        mock_object.test(*args)
+      end # action :do_something
+    } # end class.instance_eval
+    
+    subject.execute_action :do_something, :foo, :bar
+  end # it can execute actions
+  
+  it "raises an error for unrecognized actions" do
+    expect { subject.execute_action :unknown_action }.to raise_error NoMethodError
+  end # it raises an error ...
 end # describe ActionPerformer

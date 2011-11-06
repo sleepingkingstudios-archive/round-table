@@ -53,7 +53,6 @@ module RoundTable::Controllers
         
         root_context.parse input
         
-        self.puts "You said \"#{input.chomp}\""
         self.print "> "
       end # while loop
     end # method io_loop

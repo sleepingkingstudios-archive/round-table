@@ -4,30 +4,36 @@ require 'util/util'
 
 module RoundTable::Util
   module TextProcessor
-    def break_text(string, length = 80)
-      words = string.split(/\s+/)
-      lines = []
-      line = ""
+    def break_text(text, length = 80)
+      leading  = (text.match(/\A\s+/) || [""])[0]
+      trailing = (text.match(/\s+\Z/) || [""])[0]
       
-      words.each_index do |index|
-        word = words[index]
-        if word.length + line.length < length then
-          line += " " if index > 0
-          line += "#{word}"
-        else
-          lines << line
-          while word.length > length
-            line = "#{word.slice!(0...(length-1))}-"
+      substrings = text.strip.split(/\n/)
+      text = substrings.map { |string|
+        words = string.split(/\s/)
+        lines = []
+        line = ""
+
+        words.each_index do |index|
+          word = words[index]
+          if word.length + line.length < length then
+            line += " " if index > 0
+            line += "#{word}"
+          else
             lines << line
-          end # while
-          line = "#{word}"
-        end # if-else
-      end # each
+            while word.length > length
+              line = "#{word.slice!(0...(length-1))}-"
+              lines << line
+            end # while
+            line = "#{word}"
+          end # if-else
+        end # each
+        lines << line
+
+        lines.join("\n").gsub(/^\ +|\ +$/, '')
+      }.join("\n")
       
-      lines << line
-      
-      text = lines.join("\n").strip
-      text
+      "#{leading}#{text}#{trailing}"
     end # method break_text
     
     ##################

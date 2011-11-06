@@ -21,3 +21,7 @@ else
   # If the environment file has not yet been created, use the RVM CLI to select.
   rvm --create  "$environment_id"
 fi
+
+# We'll add an alias for rspec while we're at it, so the output text is in
+# colour by default
+alias rspec="rspec -c"

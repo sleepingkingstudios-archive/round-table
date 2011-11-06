@@ -59,4 +59,18 @@ describe RoundTable::Util::TextProcessor do
       line.length.should be <= length
     end # each
   end # it can break strings into lines with a max character width
+  
+  it "preserves newlines in broken strings" do
+    text = "This text contains newlines.\nNewlines must be preserved.\n\n" +
+      "Each newline is indicated by a \\n escaped character, which is a" +
+      " standard character used to indicate a line feed."
+      
+    broken_text = subject.break_text(text)
+    text.should =~ /^This text contains/
+    text.should =~ /newlines.\nNewlines must/
+    text.should =~ /preserved.\n\nEach newline/
+    text.should =~ /by a \\n escaped/
+    
+    # puts "#{broken_text.gsub(/\n/, "\\n")}"
+  end # it preserves newlines ...
 end # describe TextProcessor

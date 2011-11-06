@@ -20,6 +20,21 @@ module RoundTable::Controllers::Contexts
       end # class method action
     end # class << self
     
+    def execute_action(action, *tokens)
+      method = "action_#{action}"
+      logger.debug "#{self}: executing action #{action}, tokens = #{tokens.inspect}"
+      
+      if self.respond_to? method
+        self.send method, *tokens
+      else
+        self.missing_action action, *tokens
+      end # if-else
+    end # method execute_action
+    
+    def missing_action(action, *tokens)
+      raise NoMethodError.new("undefined action `#{action}' for #{self}")
+    end # method action_missing
+    
     def list_own_actions
       actions = Array.new
       self.methods.each do |method|
