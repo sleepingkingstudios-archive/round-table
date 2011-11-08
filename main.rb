@@ -5,13 +5,11 @@
 
 $LOAD_PATH << (File.expand_path(File.dirname __FILE__) + "/lib")
 
-require 'controllers/terminal_controller'
-require 'controllers/contexts/abstract_context'
-require 'debug/file_logger'
-require 'debug/logger_service'
-
 ################
 # Set up Logging
+
+require 'debug/file_logger'
+require 'debug/logger_service'
 
 include RoundTable::Debug::LoggerService
 
@@ -25,10 +23,16 @@ logger.format = "\n\n%m"
 logger.info "Running Round Table..."
 logger.format = "%L %m"
 
+###################
+# Require Resources
+
+require 'controllers/terminal_controller'
+require 'controllers/contexts/application_context'
+
 #####################################
 # Instantiate Controller and Contexts
 
-context = RoundTable::Controllers::Contexts::AbstractContext.new
+context = RoundTable::Controllers::Contexts::ApplicationContext.new
 controller = RoundTable::Controllers::TerminalController.new context
 
 ###############

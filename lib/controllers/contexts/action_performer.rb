@@ -14,7 +14,7 @@ module RoundTable::Controllers::Contexts
         raise ArgumentError.new("expected a block") unless block_given?
         
         name = name.to_s.downcase.strip
-        logger.debug "#{self.to_s.gsub(/\w+::/, "")}: defining action \"#{name}\", block = #{block}"
+        logger.debug "#{self.to_s.gsub(/\w+::/, "")}: defining action \"#{name}\""
         
         define_method "action_#{name}", block
       end # class method action
@@ -22,9 +22,9 @@ module RoundTable::Controllers::Contexts
     
     def execute_action(action, *tokens)
       method = "action_#{action}"
-      logger.debug "#{self}: executing action #{action}, tokens = #{tokens.inspect}"
+      logger.debug "#{self.class.to_s.gsub(/w+::/, "")}: executing action #{action}, tokens = #{tokens.inspect}"
       
-      if self.respond_to? method
+      if self.has_action? action
         self.send method, *tokens
       else
         self.missing_action action, *tokens
@@ -34,6 +34,10 @@ module RoundTable::Controllers::Contexts
     def missing_action(action, *tokens)
       raise NoMethodError.new("undefined action `#{action}' for #{self}")
     end # method action_missing
+    
+    def has_action?(action)
+      return self.respond_to? "action_#{action}"
+    end # method has_action?
     
     def list_own_actions
       actions = Array.new

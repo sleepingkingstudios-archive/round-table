@@ -4,20 +4,23 @@ require 'spec_helper'
 require 'controllers/contexts/abstract_context'
 require 'events/event_dispatcher'
 
-module RoundTable::Mock
-  module Controllers
-    module Contexts
-      class MockContext < RoundTable::Controllers::Contexts::AbstractContext
-        
-      end # class MockContext
-    end # module Contexts
-  end # module Controllers
-end # module RoundTable::Mock
-
 describe RoundTable::Controllers::Contexts::AbstractContext do
   include RoundTable::Controllers::Contexts
   include RoundTable::Events::EventDispatcher
-  include RoundTable::Mock::Controllers::Contexts
+  
+  before :each do
+    module RoundTable::Mock
+      module Controllers
+        module Contexts
+          remove_const "MockContext" if const_defined? "MockContext"
+          remove_const "AnotherMockContext" if const_defined? "AnotherMockContext"
+          
+          class MockContext < RoundTable::Controllers::Contexts::AbstractContext; end
+          class AnotherMockContext < RoundTable::Controllers::Contexts::AbstractContext; end
+        end # module Contexts
+      end # module Controllers
+    end # module RoundTable::Mock
+  end # before :each
   
   it "should parse text input" do
     string = "verb verb_object preposition prep_object"
@@ -43,7 +46,7 @@ describe RoundTable::Controllers::Contexts::AbstractContext do
     mock_object.stub(:test) do |*args| end
     mock_object.should_receive(:test).with(:foo, :bar)
     
-    parent = MockContext.new
+    parent = RoundTable::Mock::Controllers::Contexts::MockContext.new
     parent.class.instance_eval {
       action :do_something do |*args|
         mock_object.test(*args)
@@ -55,4 +58,38 @@ describe RoundTable::Controllers::Contexts::AbstractContext do
     
     child.execute_action :do_something, :foo, :bar
   end # it should pass ... to its parent ...
+  
+  it "can list actions known to itself and its ancestors" do
+    parent = RoundTable::Mock::Controllers::Contexts::MockContext.new
+    parent.class.instance_eval {
+      action :foo do; end
+      action :bar do; end
+    } # end class.instance_eval
+    
+    child = RoundTable::Mock::Controllers::Contexts::AnotherMockContext.new
+    child.class.instance_eval {
+      action :baz do; end
+    } # end class.instance_eval
+    
+    parent.add_child child
+    actions = child.list_all_actions
+    %w(foo bar baz).each do |action|
+      actions.should include action
+    end # each
+  end # it can list actions ...
+  
+  it "lists duplicate actions only once" do
+    parent = RoundTable::Mock::Controllers::Contexts::MockContext.new
+    parent.class.instance_eval {
+      action :foo do; end
+    } # end class.instance_eval
+    
+    child = RoundTable::Mock::Controllers::Contexts::AnotherMockContext.new
+    child.class.instance_eval {
+      action :foo do; end
+    } # end class.instance_eval
+    
+    parent.add_child child
+    child.list_all_actions.select { |item| item == "foo" }.count.should be 1
+  end # it lists duplicate actions only once
 end # describe RoundTable::Controllers::Contexts::AbstractContext

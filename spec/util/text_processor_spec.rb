@@ -49,7 +49,9 @@ describe RoundTable::Util::TextProcessor do
     broken_text.split("\n").each do |line|
       line.length.should be <= length
     end # each
+  end # it can break strings ...
     
+  it "can break words using hyphens" do
     length = 10
     text = "The word \"Honorificabilitudinitatibus\" means the state of" +
       " being able to achieve honours."
@@ -58,7 +60,7 @@ describe RoundTable::Util::TextProcessor do
     broken_text.split("\n").each do |line|
       line.length.should be <= length
     end # each
-  end # it can break strings into lines with a max character width
+  end # it can break words ...
   
   it "preserves newlines in broken strings" do
     text = "This text contains newlines.\nNewlines must be preserved.\n\n" +

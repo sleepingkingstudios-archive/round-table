@@ -13,12 +13,29 @@ describe RoundTable::Controllers::TerminalController do
   
   it "runs an IO loop" do
     input = double('input_stream')
-    input.stub(:gets) { "quit\n" }
+    input.stub(:gets)
     output = double('output_stream')
     output.stub(:print)
     output.stub(:puts)
     
-    subject = TerminalController.new @context, input, output
-    subject.io_loop
+    @controller = TerminalController.new @context, input, output
+    
+    def kill_loop
+      @controller.kill!
+    end # function kill_loop
+    
+    thread = Thread.new do
+      sleep 0.05
+      kill_loop
+    end # Thread.new
+    
+    logger.debug "Halting :debug logging due to loop..."
+    log_level = logger.log_level
+    logger.log_level = 1
+    @controller.io_loop
+    logger.log_level = log_level
+    logger.debug "Resuming :debug logging"
+    
+    thread.join
   end # it runs an IO loop
 end # describe RoundTable::Controllers::TerminalController

@@ -38,12 +38,21 @@ describe RoundTable::Controllers::Contexts::ActionPerformer do
     
     subject.class.instance_eval {
       actions.each do |name|
-        action name do; puts "#{name}"; end
+        action name do; end
       end # each
     } # end class.instance_eval
     
     subject.list_own_actions.should eq actions.sort
   end # it can list actions ...
+  
+  it "can check if it responds to an action" do
+    subject.class.instance_eval {
+      action :do_something do; end
+    } # end class.instance_eval
+    
+    subject.has_action?(:do_something).should be true
+    subject.has_action?(:do_nothing).should be false
+  end # it can check if it responds to an action
   
   it "can execute actions" do
     mock_object = double('mock')

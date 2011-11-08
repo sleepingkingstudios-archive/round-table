@@ -21,6 +21,15 @@ end # define be_a_logger
 describe RoundTable::Debug::LoggerService do
   include RoundTable::Debug
   
+  stored_logger = nil
+  before :all do
+    stored_logger = RoundTable::Debug::Logger::StoredLogger.logger
+  end # before :all
+  
+  after :all do
+    RoundTable::Debug::Logger::StoredLogger.logger = stored_logger
+  end # after :all
+  
   subject { Object.new.extend LoggerService }
   
   it "provides access to a logger" do
@@ -31,9 +40,13 @@ describe RoundTable::Debug::LoggerService do
   it "can be given a new logger" do
     subject.should respond_to(:logger=)
     
+    stored_logger = subject.logger
+    
     custom_logger = Logger.new
     subject.logger = custom_logger
     subject.logger.should eq(custom_logger)
+    
+    subject.logger = stored_logger
   end # it can be given a new logger
   
   it "prints messages through its logger" do
@@ -42,10 +55,13 @@ describe RoundTable::Debug::LoggerService do
     mock_io = double('mock_io')
     mock_io.should_receive(:puts).with(/#{message}/)
     
+    stored_logger = subject.logger
     subject.logger = Logger.new :output => mock_io
     
     subject.instance_eval do
       logger.log(:info, message)
     end # module_eval
+    
+    subject.logger = stored_logger
   end # it prints messages through its logger
 end # describe

@@ -37,8 +37,18 @@ module RoundTable::Controllers::Contexts
       dispatch_event Event.new :text_output, :text => self.break_text(string, 80)
     end # method puts
     
+    def print(string)
+      dispatch_event Event.new :text_output, :text => self.break_text(string, 80), :strip_whitespace => :true
+    end # method print
+    
     ###################
     # Executing Actions
+    
+    def list_all_actions
+      actions = self.list_own_actions
+      actions += @parent.list_all_actions unless self.root?
+      actions.compact.uniq.sort
+    end # method list_all_actions
     
     def missing_action(action, *tokens)
       if self.root?
@@ -58,7 +68,7 @@ module RoundTable::Controllers::Contexts
       tokens = tokenize string
       action = tokens.shift
       
-      self.execute_action action, tokens
+      self.execute_action action, *tokens
     end # method parse
   end # class AbstractContext
 end # module RoundTable::Controllers::Contexts

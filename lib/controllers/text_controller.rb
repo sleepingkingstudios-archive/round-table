@@ -9,7 +9,7 @@ module RoundTable::Controllers
     include RoundTable::Debug::LoggerService
     
     def initialize(root_context, input, output)
-      raise ArgumentError.new("context must be an AbstractContext") unless root_context.is_a? RoundTable::Controllers::Contexts::AbstractContext
+      raise ArgumentError.new("context must be an AbstractContext, received #{root_context.class}") unless root_context.is_a? RoundTable::Controllers::Contexts::AbstractContext
       self.root_context = root_context
       
       raise ArgumentError.new("input stream must support :gets method.") unless input.respond_to?(:gets)
