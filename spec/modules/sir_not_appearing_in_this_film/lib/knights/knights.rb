@@ -2,6 +2,6 @@
 
 require 'sir_not_appearing_in_this_film'
 
-module RoundTable::Vendor::Modules::SirNotAppearingInThisFilm
+module SirNotAppearingInThisFilm
   module Knights; end
-end # module sir_not_appearing_in_this_film
+end # module SirNotAppearingInThisFilm
