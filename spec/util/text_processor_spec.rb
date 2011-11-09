@@ -10,6 +10,7 @@ module RoundTable::Mock::Util
 end # module RoundTable::Mock::Util
 
 describe RoundTable::Util::TextProcessor do
+  include RoundTable::Util
   include RoundTable::Mock::Util
   
   subject { MockTextProcessor.new }
@@ -51,7 +52,7 @@ describe RoundTable::Util::TextProcessor do
     end # each
   end # it can break strings ...
     
-  it "can break words using hyphens" do
+  it "can break words into lines using hyphens" do
     length = 10
     text = "The word \"Honorificabilitudinitatibus\" means the state of" +
       " being able to achieve honours."
@@ -61,6 +62,9 @@ describe RoundTable::Util::TextProcessor do
       line.length.should be <= length
     end # each
   end # it can break words ...
+  
+  #################
+  # Text Formatting
   
   it "preserves newlines in broken strings" do
     text = "This text contains newlines.\nNewlines must be preserved.\n\n" +
@@ -75,4 +79,24 @@ describe RoundTable::Util::TextProcessor do
     
     # puts "#{broken_text.gsub(/\n/, "\\n")}"
   end # it preserves newlines ...
+  
+  it "converts unknown case to snake_case" do
+    snake_string = "this_is_snake_case"
+    camel_string = "ThisIsSnakeCase"
+    space_string = "This is snake-case"
+    
+    TextProcessor.to_snake_case(snake_string).should eq snake_string
+    TextProcessor.to_snake_case(camel_string).should eq snake_string
+    TextProcessor.to_snake_case(space_string).should eq snake_string
+  end # it converts ... to snake_case
+  
+  it "converts unknown case to CamelCase" do
+    snake_string = "this_is_camel_case"
+    camel_string = "ThisIsCamelCase"
+    space_string = "This is camel-case"
+    
+    TextProcessor.to_camel_case(snake_string).should eq camel_string
+    TextProcessor.to_camel_case(camel_string).should eq camel_string
+    TextProcessor.to_camel_case(space_string).should eq camel_string
+  end # it converts unknown case to CamelCase
 end # describe TextProcessor

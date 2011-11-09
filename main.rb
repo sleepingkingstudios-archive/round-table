@@ -3,7 +3,8 @@
 ######################
 # Set up the Load Path
 
-$LOAD_PATH << (File.expand_path(File.dirname __FILE__) + "/lib")
+current_path = File.expand_path(File.dirname __FILE__)
+$LOAD_PATH << "#{current_path}/lib" << "#{current_path}/vendor"
 
 ################
 # Set up Logging

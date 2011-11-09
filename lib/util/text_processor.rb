@@ -4,6 +4,21 @@ require 'util/util'
 
 module RoundTable::Util
   module TextProcessor
+    class << self
+      def to_camel_case(string)
+        string.split(/[\s_-]+/).map{ |substr|
+          "#{substr.slice!(0).upcase}#{substr}"
+        }.join("")
+      end # class method to_camel_case
+      
+      def to_snake_case(string)
+        string.gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
+          gsub(/([a-z\d])([A-Z])/,'\1_\2').
+          tr("- ", "_").
+          downcase
+      end # class method to_snake_case
+    end # class << self
+    
     def break_text(text, length = 80)
       leading  = (text.match(/\A\s+/) || [""])[0]
       trailing = (text.match(/\s+\Z/) || [""])[0]
