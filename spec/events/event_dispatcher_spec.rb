@@ -183,8 +183,9 @@ describe RoundTable::Events::EventDispatcher do
     callback_has_been_called.should be true
     
     parent.add_listener :other_type, @callback
-    @callback.should_receive(:call).once
+    @callback.should_receive(:call).twice
     child.dispatch_event Event.new :other_type, :bubbles => :true
+    child.dispatch_event (Event.new :other_type), :bubbles => :true
     
     parent.add_listener :third_type, @callback
     @callback.should_not_receive(:call)

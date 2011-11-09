@@ -7,6 +7,7 @@ require 'events/event_callback'
 module RoundTable::Events
   module EventDispatcher
     def dispatch_event(event, params = {})
+      event.update(params) if params.is_a? Hash
       event[:original_dispatcher] ||= self
       event[:current_dispatcher] = self
       

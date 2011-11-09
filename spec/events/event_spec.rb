@@ -22,5 +22,8 @@ describe RoundTable::Events::Event do
     
     subject[:baz] = "bizzle"
     subject[:baz].should eq("bizzle")
+    
+    subject.update({ :wibble => "wobble" })
+    subject[:wibble].should eq("wobble")
   end # it can save arbitrary data
 end # describe Event

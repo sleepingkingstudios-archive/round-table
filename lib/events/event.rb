@@ -19,5 +19,9 @@ module RoundTable::Events
     def []=(key, value)
       @data[key] = value
     end # method []=
+    
+    def update(params = {})
+      @data.update(params)
+    end # method update
   end # class Event
 end # module RoundTable::Events
