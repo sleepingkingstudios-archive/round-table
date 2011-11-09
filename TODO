@@ -1,8 +1,7 @@
 TODO
 
 Short-Term:
-- implement event bubbling
-- finish implementing actions in TextContext
+- implement event bubbling DONE
 
 Mid-Term:
 - develop Round Table modules (aka Knights?) that provide data/scenarios and
