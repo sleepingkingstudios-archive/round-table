@@ -27,4 +27,18 @@ describe RoundTable::Controllers::Contexts::ApplicationContext do
     
     subject.execute_action :quit
   end # it has a quit action ...
+  
+  it "has a load action that loads a module" do
+    pending
+    output = double('mock_output')
+    output.stub(:call)
+    
+    subject.add_listener :text_output, Proc.new { |event|
+      output.call event[:text]
+    } # listener :text_output
+    
+    output.should_receive(:call).with(/mightiest tree in the forest/)
+    
+    subject.execute_action :load, "Sir Not Appearing In This Film"
+  end # it has a load action that loads a module
 end # describe ApplicationContext

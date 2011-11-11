@@ -1,5 +1,5 @@
 # lib/round_table.rb
 
-module RoundTable
-  
-end # module RoundTable
+LIBRARY_PATH = File.expand_path(File.dirname __FILE__)
+
+module RoundTable; end

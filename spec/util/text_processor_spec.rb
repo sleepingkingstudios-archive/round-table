@@ -85,9 +85,9 @@ describe RoundTable::Util::TextProcessor do
     camel_string = "ThisIsSnakeCase"
     space_string = "This is snake-case"
     
-    TextProcessor.to_snake_case(snake_string).should eq snake_string
-    TextProcessor.to_snake_case(camel_string).should eq snake_string
-    TextProcessor.to_snake_case(space_string).should eq snake_string
+    TextProcessor.to_snake_case(snake_string).should =~ /^#{snake_string}$/
+    TextProcessor.to_snake_case(camel_string).should =~ /^#{snake_string}$/
+    TextProcessor.to_snake_case(space_string).should =~ /^#{snake_string}$/
   end # it converts ... to snake_case
   
   it "converts unknown case to CamelCase" do
@@ -95,8 +95,8 @@ describe RoundTable::Util::TextProcessor do
     camel_string = "ThisIsCamelCase"
     space_string = "This is camel-case"
     
-    TextProcessor.to_camel_case(snake_string).should eq camel_string
-    TextProcessor.to_camel_case(camel_string).should eq camel_string
-    TextProcessor.to_camel_case(space_string).should eq camel_string
-  end # it converts unknown case to CamelCase
+    TextProcessor.to_camel_case(snake_string).should =~ /^#{camel_string}$/
+    TextProcessor.to_camel_case(camel_string).should =~ /^#{camel_string}$/
+    TextProcessor.to_camel_case(space_string).should =~ /^#{camel_string}$/
+  end # it converts ... to CamelCase
 end # describe TextProcessor
