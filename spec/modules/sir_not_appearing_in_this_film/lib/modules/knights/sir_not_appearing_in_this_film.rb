@@ -13,5 +13,14 @@ module SirNotAppearingInThisFilm::Knights
     def build_context
       SirNotAppearingInThisFilm::Contexts::ShrubberyContext.new
     end # method build_context
+    
+    def message(*args)
+      case args.map{|arg| arg.to_s }.join(" ").strip
+      when "initialize"
+        return "I am Arthur, King of the Britons."
+      else
+        super
+      end # case
+    end # method message
   end # class SirNotAppearingInThisFilm
 end # module SirNotAppearingInThisFilm::Knights

@@ -34,11 +34,11 @@ module RoundTable::Controllers::Contexts
     end # method gets
     
     def puts(string)
-      dispatch_event Event.new :text_output, :text => self.break_text(string, 80)
+      dispatch_event Event.new :text_output, :text => self.break_text(string, 80), :bubbles => :true
     end # method puts
     
     def print(string)
-      dispatch_event Event.new :text_output, :text => self.break_text(string, 80), :strip_whitespace => :true
+      dispatch_event Event.new :text_output, :text => self.break_text(string, 80), :bubbles => :true, :strip_whitespace => :true
     end # method print
     
     ###################
@@ -68,7 +68,7 @@ module RoundTable::Controllers::Contexts
       tokens = tokenize string
       action = tokens.shift
       
-      self.execute_action action, *tokens
+      self.leaf.execute_action action, *tokens
     end # method parse
   end # class AbstractContext
 end # module RoundTable::Controllers::Contexts

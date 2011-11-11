@@ -21,5 +21,9 @@ shared_examples "a loadable \"knight\" module" do
     it "returns a valid context on build_context" do
       subject.build_context.should be_a RoundTable::Controllers::Contexts::AbstractContext
     end # it returns a valid context ...
+    
+    it "has a message method that returns a string" do
+      subject.message.should be_a String
+    end # it has a message method ...
   end # describe "has been instantiated"
 end # a loadable ... module

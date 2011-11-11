@@ -7,6 +7,17 @@ require 'controllers/contexts/application_context'
 describe RoundTable::Controllers::Contexts::ApplicationContext do
   include RoundTable::Controllers::Contexts
   
+  __vendor_path__ = VENDOR_PATH
+  before :all do
+    Object.send :remove_const, :VENDOR_PATH
+    Object.send :const_set, :VENDOR_PATH, SPEC_PATH
+  end # before :all
+  
+  after :all do
+    Object.send :remove_const, :VENDOR_PATH
+    Object.send :const_set, :VENDOR_PATH, __vendor_path__
+  end # after :all
+  
   it "is a kind of AbstractContext" do
     subject.kind_of?(AbstractContext).should be true
   end # it is a kind of AbstractContext
@@ -29,7 +40,6 @@ describe RoundTable::Controllers::Contexts::ApplicationContext do
   end # it has a quit action ...
   
   it "has a load action that loads a module" do
-    pending
     output = double('mock_output')
     output.stub(:call)
     
@@ -37,8 +47,10 @@ describe RoundTable::Controllers::Contexts::ApplicationContext do
       output.call event[:text]
     } # listener :text_output
     
-    output.should_receive(:call).with(/mightiest tree in the forest/)
-    
+    output.should_receive(:call).with(/King of the Britons/)
     subject.execute_action :load, "Sir Not Appearing In This Film"
+    
+    output.should_receive(:call).with(/mightiest tree in the forest/)
+    subject.parse "ni"
   end # it has a load action that loads a module
 end # describe ApplicationContext

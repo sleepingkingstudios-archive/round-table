@@ -11,6 +11,8 @@ module RoundTable::Controllers::Contexts
     
     def initialize
       @knights = RoundTable::Knights::KnightManager.new
+      
+      super
     end # method initialize
     
     action :quit do |*args|
@@ -44,13 +46,19 @@ module RoundTable::Controllers::Contexts
           @knights.list.join(", ") + ". To load a module, type \"load\"" +
           " followed by the name of the module."
       else
+        unless self.children.count == 0
+          self.puts "There is already a module loaded. To load a new module," +
+            " exit out of the current module and then type \"load\" followed" +
+            " by the name of the module you wish to load."
+          return
+        end # unless
+        
         name = args.join(" ")
         slug = TextProcessor.to_snake_case(name)
         full_name = slug.split("_").map { |word| word.capitalize }.join(" ")
         
         if @knights.modules.include? slug
-          knight = @knights.modules[:slug]
-          self.puts "Module #{name} was already loaded."
+          knight = @knights.modules[slug]
         else
           unless @knights.list.include? full_name
             self.puts "There is no module named \"#{full_name}\" in my load" +
@@ -59,14 +67,17 @@ module RoundTable::Controllers::Contexts
           end # unless
         
           knight = @knights.load name
-        
-          if knight.nil?
-            self.puts "There was an error loading module #{name}."
-            return
-          else
-            self.puts "Module #{name} has been successfully loaded."
-          end # if-else # loading error
         end # if-else # module already loaded
+        
+        if knight.nil?
+          self.puts "There was an error loading module #{name}."
+          return
+        end # if-else # loading error
+        
+        context = knight.build_context
+        self.add_child context
+        
+        self.puts knight.message :initialize
       end # case args.first
     end # action :load
   end # class ApplicationContext
