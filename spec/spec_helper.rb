@@ -4,6 +4,8 @@ require 'round_table'
 require 'debug/file_logger'
 require 'debug/logger_service'
 
+@spec_path = File.expand_path(File.dirname __FILE__)
+
 module RoundTable
   module Mock
     
