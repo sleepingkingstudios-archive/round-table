@@ -2,7 +2,7 @@
 
 require 'knights/knight'
 require 'modules/knights/knights'
-require 'modules/contexts/shrubbery_context'
+require 'modules/controllers/shrubbery_controller'
 
 module SirNotAppearingInThisFilm::Knights
   class SirNotAppearingInThisFilm < RoundTable::Knights::Knight
@@ -10,8 +10,8 @@ module SirNotAppearingInThisFilm::Knights
       # constructor
     end # method initialize
     
-    def build_context
-      SirNotAppearingInThisFilm::Contexts::ShrubberyContext.new
+    def controller
+      SirNotAppearingInThisFilm::Controllers::ShrubberyController.new
     end # method build_context
     
     def message(*args)

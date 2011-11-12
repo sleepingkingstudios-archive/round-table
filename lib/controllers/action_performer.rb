@@ -1,9 +1,9 @@
-# lib/controllers/contexts/action_performer.rb
+# lib/controllers/action_performer.rb
 
-require 'controllers/contexts/contexts'
+require 'controllers/controllers'
 require 'debug/logger_service'
 
-module RoundTable::Controllers::Contexts
+module RoundTable::Controllers
   class ActionPerformer
     include RoundTable::Debug::LoggerService
     
@@ -50,4 +50,4 @@ module RoundTable::Controllers::Contexts
       actions.sort
     end # method list_own_actions
   end # class ActionPerformer
-end # module RoundTable::Controllers::Contexts
+end # module RoundTable::Controllers

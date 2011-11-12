@@ -27,17 +27,17 @@ logger.format = "%L %m"
 ###################
 # Require Resources
 
-require 'controllers/terminal_controller'
-require 'controllers/contexts/application_context'
+require 'interfaces/terminal_interface'
+require 'controllers/application_controller'
 
 #####################################
 # Instantiate Controller and Contexts
 
-context = RoundTable::Controllers::Contexts::ApplicationContext.new
-controller = RoundTable::Controllers::TerminalController.new context
+controller = RoundTable::Controllers::ApplicationController.new
+interface = RoundTable::Interfaces::TerminalInterface.new controller
 
 ###############
 # Begin Program
 puts "Welcome to the Round Table interactive adventure platform"
 
-controller.io_loop
+interface.io_loop

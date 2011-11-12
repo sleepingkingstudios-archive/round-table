@@ -1,9 +1,9 @@
-# spec/controllers/contexts/action_performer_spec.rb
+# spec/controllers/action_performer_spec.rb
 
 require 'spec_helper'
-require 'controllers/contexts/action_performer'
+require 'controllers/action_performer'
 
-describe RoundTable::Controllers::Contexts::ActionPerformer do
+describe RoundTable::Controllers::ActionPerformer do
   it "can define actions on itself" do
     mock_object = double('mock')
     mock_object.should_receive(:bar)

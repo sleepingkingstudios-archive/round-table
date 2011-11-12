@@ -1,7 +1,7 @@
 # spec/knights/knight_helper.rb
 
 require 'spec_helper'
-require 'controllers/contexts/abstract_context'
+require 'controllers/abstract_controller'
 require 'knights/knight'
 
 shared_examples "a loadable \"knight\" module" do
@@ -19,7 +19,7 @@ shared_examples "a loadable \"knight\" module" do
     end # before :each
     
     it "returns a valid context on build_context" do
-      subject.build_context.should be_a RoundTable::Controllers::Contexts::AbstractContext
+      subject.controller.should be_a RoundTable::Controllers::AbstractController
     end # it returns a valid context ...
     
     it "has a message method that returns a string" do

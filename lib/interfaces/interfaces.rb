@@ -1,7 +1,7 @@
-# lib/controllers/controllers.rb
+# lib/interfaces/interfaces.rb
 
 require 'round_table'
 
 module RoundTable
-  module Contexts; end
+  module Interfaces; end
 end # module RoundTable

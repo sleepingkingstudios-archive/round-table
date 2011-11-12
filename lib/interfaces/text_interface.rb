@@ -1,16 +1,18 @@
-# lib/controllers/text_controller.rb
+# lib/interfaces/text_interface.rb
 
-require 'controllers/controllers'
-require 'controllers/contexts/abstract_context'
+require 'interfaces/interfaces'
+require 'controllers/abstract_controller'
 require 'debug/logger_service'
 
-module RoundTable::Controllers
-  class TextController
+module RoundTable::Interfaces
+  class TextInterface
     include RoundTable::Debug::LoggerService
     
-    def initialize(root_context, input, output)
-      raise ArgumentError.new("context must be an AbstractContext, received #{root_context.class}") unless root_context.is_a? RoundTable::Controllers::Contexts::AbstractContext
-      self.root_context = root_context
+    def initialize(root_controller, input, output)
+      unless root_controller.is_a? RoundTable::Controllers::AbstractController
+        raise ArgumentError.new("controller must be an AbstractController, received #{root_controller.class}")
+      end # unless
+      self.root_controller = root_controller
       
       raise ArgumentError.new("input stream must support :gets method.") unless input.respond_to?(:gets)
       @input = input
@@ -20,9 +22,9 @@ module RoundTable::Controllers
       @output = output
     end # method initialize
     
-    attr_reader :root_context
-    def root_context=(context)
-      @root_context = context if context.is_a? RoundTable::Controllers::Contexts::AbstractContext
+    attr_reader :root_controller
+    def root_controller=(context)
+      @root_controller = context if context.is_a? RoundTable::Controllers::AbstractController
     end # mutator context=
     
     #######################
@@ -39,5 +41,5 @@ module RoundTable::Controllers
     def puts(string)
       @output.puts string
     end # method puts
-  end # class TextController
-end # module RoundTable::Controllers
+  end # class TextInterface
+end # module RoundTable::Interfaces

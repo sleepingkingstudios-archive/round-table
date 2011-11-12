@@ -1,6 +1,6 @@
 # lib/knights/knight.rb
 
-require 'controllers/contexts/abstract_context'
+require 'controllers/abstract_controller'
 require 'knights/knights'
 require 'util/text_processor'
 
@@ -8,9 +8,9 @@ module RoundTable::Knights
   class Knight
     include RoundTable::Util
     
-    def build_context
-      RoundTable::Controllers::Contexts::AbstractContext.new
-    end # method build_context
+    def controller
+      RoundTable::Controllers::AbstractController.new
+    end # method controller
     
     def message(*args)
       case args.map{|arg| arg.to_s }.join(" ").strip
