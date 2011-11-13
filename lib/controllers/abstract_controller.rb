@@ -20,9 +20,9 @@ module RoundTable::Controllers
     
     def missing_action(action, *tokens)
       if self.root?
-        self.puts "I'm sorry, I don't recognize that action.\n\nFor a list" +
-          " of all available actions, type \"what\". For information on an" +
-          " action, type the action followed by \"help\". For general" +
+        self.puts "I'm sorry, I don't know how to \"#{action}\".\n\nFor a" +
+          " list of all available actions, type \"what\". For information on" +
+          " an action, type the action followed by \"help\". For general" +
           " information, type \"help\"."
       else
         self.parent.execute_action action, *tokens
@@ -39,10 +39,21 @@ module RoundTable::Controllers
     # Parsing Input Strings
     
     def parse(string)
-      tokens = tokenize string
-      action = tokens.shift
+      words = self.tokenize string
+      tokens = Array.new
       
-      self.leaf.execute_action action, *tokens
+      until words.empty?
+        action = words.join("_")
+        
+        if self.leaf.list_all_actions.include? action
+          self.leaf.execute_action(action, *tokens)
+          return
+        end # if
+        
+        tokens << words.pop
+      end # while
+      
+      self.missing_action(string, [])
     end # method parse
   end # class AbstractController
 end # module RoundTable::Controllers::Contexts

@@ -13,7 +13,7 @@ module RoundTable::Controllers
       def action(name, &block)
         raise ArgumentError.new("expected a block") unless block_given?
         
-        name = name.to_s.downcase.strip
+        name = name.to_s.downcase.gsub(/[\s-]+/, '_').strip
         logger.debug "#{self.to_s.gsub(/\w+::/, "")}: defining action \"#{name}\""
         
         define_method "action_#{name}", block
@@ -21,8 +21,8 @@ module RoundTable::Controllers
     end # class << self
     
     def execute_action(action, *tokens)
-      method = "action_#{action}"
-      logger.debug "#{self.class.to_s.gsub(/w+::/, "")}: executing action #{action}, tokens = #{tokens.inspect}"
+      method = "action_#{action.to_s.tr(" ", "_")}"
+      logger.debug "#{self.class.to_s.gsub(/w+::/, "")}: executing action \"#{action}\", tokens = #{tokens.inspect}"
       
       if self.has_action? action
         self.send method, *tokens
@@ -36,7 +36,7 @@ module RoundTable::Controllers
     end # method action_missing
     
     def has_action?(action)
-      return self.respond_to? "action_#{action}"
+      return self.respond_to? "action_#{action.to_s.tr(" ", "_")}"
     end # method has_action?
     
     def list_own_actions

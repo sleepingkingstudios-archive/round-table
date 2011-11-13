@@ -56,6 +56,19 @@ shared_examples "an ActionPerformer" do
     subject.action_foo
   end # it can define actions on itself
   
+  it "can define a multi-word action" do
+    mock_object = double('mock')
+    mock_object.should_receive(:baz)
+    
+    subject.class.instance_eval {
+      action "foo bar" do
+        mock_object.baz
+      end # action :foo
+    } # end class.instance_eval
+    
+    subject.action_foo_bar
+  end # it can define a multi-word action
+  
   it "requires a name when defining an action" do
     expect {
       subject.class.instance_eval do
@@ -78,7 +91,7 @@ shared_examples "an ActionPerformer" do
   it "can execute actions" do
     mock_object = double('mock')
     mock_object.stub(:test) do |*args| end
-    mock_object.should_receive(:test)# .with(:foo, :bar)
+    mock_object.should_receive(:test).with(:foo, :bar)
     
     subject.class.instance_eval {
       action :do_something do |*args|

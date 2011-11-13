@@ -39,10 +39,6 @@ module RoundTable::Controllers
     # Executing Actions
     
     def execute_action(action, *tokens)
-      if self.has_action? action
-        super and return
-      end # if
-      
       @delegates.each do |key, delegate|
         if delegate.has_action?(action) && tokens.join(" ") =~ /^#{key}/
           delegate.execute_action action, *tokens

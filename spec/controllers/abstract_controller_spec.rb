@@ -8,6 +8,7 @@ require 'events/event_dispatcher'
 describe RoundTable::Controllers::AbstractController do
   include RoundTable::Controllers
   include RoundTable::Events::EventDispatcher
+  include RoundTable::Mock::Controllers
   
   before :each do
     module RoundTable::Mock
@@ -27,6 +28,26 @@ describe RoundTable::Controllers::AbstractController do
     string = "verb verb_object preposition prep_object"
     subject.parse string
   end # it should parse text input
+  
+  it "can parse multi-word actions" do
+    mock = double('callable')
+    mock.should_receive(:look)
+    mock.should_receive(:look_at)
+    
+    subject = MockController.new
+    subject.class.instance_eval do
+      action :look do |*args|
+        mock.look
+      end # action :look
+      
+      action :look_at do |*args|
+        mock.look_at
+      end # action :look
+    end # class.instance_eval
+    
+    subject.parse("look")
+    subject.parse("look at that")
+  end # it can parse multi-word actions
   
   ####################
   # Context Stack-Tree
