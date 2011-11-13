@@ -1,18 +1,13 @@
 # lib/controllers/abstract_controller.rb
 
 require 'controllers/controllers'
-require 'controllers/action_performer'
+require 'controllers/action_delegate'
 require 'debug/logger_service'
-require 'events/event_dispatcher'
-require 'util/text_processor'
 require 'util/tree_collection'
 
 module RoundTable::Controllers
-  class AbstractController < ActionPerformer
+  class AbstractController < ActionDelegate
     include RoundTable::Debug::LoggerService
-    include RoundTable::Events
-    include RoundTable::Events::EventDispatcher
-    include RoundTable::Util::TextProcessor
     include RoundTable::Util::TreeCollection
     
     def initialize
@@ -20,35 +15,8 @@ module RoundTable::Controllers
       @children = Array.new
     end # method initialize
     
-    def to_s
-      self.class.to_s.gsub(/\w+::/, "")
-    end # method to_s
-    
-    #######################
-    # Text Input and Output
-    
-    def gets
-      event = Event.new :text_input
-      dispatch_event event
-      event[:text]
-    end # method gets
-    
-    def puts(string)
-      dispatch_event Event.new :text_output, :text => self.break_text(string, 80), :bubbles => :true
-    end # method puts
-    
-    def print(string)
-      dispatch_event Event.new :text_output, :text => self.break_text(string, 80), :bubbles => :true, :strip_whitespace => :true
-    end # method print
-    
     ###################
     # Executing Actions
-    
-    def list_all_actions
-      actions = self.list_own_actions
-      actions += @parent.list_all_actions unless self.root?
-      actions.compact.uniq.sort
-    end # method list_all_actions
     
     def missing_action(action, *tokens)
       if self.root?
@@ -60,6 +28,12 @@ module RoundTable::Controllers
         self.parent.execute_action action, *tokens
       end # if-else
     end # method missing_action
+    
+    def list_all_actions
+      actions = self.list_own_actions
+      actions += @parent.list_all_actions unless self.root?
+      actions.compact.uniq.sort
+    end # method list_all_actions
     
     #######################
     # Parsing Input Strings

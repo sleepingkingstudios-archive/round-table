@@ -106,6 +106,14 @@ describe RoundTable::Events::EventDispatcher do
     
     subject.dispatch_event @event
     subject.dispatch_event Event.new :other_type
+    
+    subject.add_listener :*, @callback, :foo => :bar
+    @callback.should_receive(:call)
+    subject.dispatch_event Event.new :foo_event
+    
+    subject.remove_listeners { |callback| callback.data[:foo] == :bar }
+    @callback.should_not_receive(:call)
+    subject.dispatch_event Event.new :foo_event
   end # it can remove ... matching a block
   
   #########################

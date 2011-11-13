@@ -1,6 +1,7 @@
 # app/controllers/abstract_context.rb
 
 require 'spec_helper'
+require 'controllers/action_delegate_helper'
 require 'controllers/abstract_controller'
 require 'events/event_dispatcher'
 
@@ -20,6 +21,8 @@ describe RoundTable::Controllers::AbstractController do
     end # module RoundTable::Mock
   end # before :each
   
+  it_behaves_like "an ActionDelegate"
+  
   it "should parse text input" do
     string = "verb verb_object preposition prep_object"
     subject.parse string
@@ -28,18 +31,7 @@ describe RoundTable::Controllers::AbstractController do
   ####################
   # Context Stack-Tree
   
-  it "if root context, should send a text notice for unknown actions" do
-    mock_object = double('mock')
-    mock_object.should_receive(:print).with(/.+/)
-    
-    subject.add_listener :text_output, Proc.new { |event|
-      mock_object.print event[:text]
-    } # listener :text_output
-    
-    subject.execute_action :unknown_action
-  end # it ... should send a text notice
-  
-  it "should pass unknown actions to its parent context" do
+  it "should pass unknown actions to its parent controller" do
     mock_object = double('mock')
     mock_object.stub(:test) do |*args| end
     mock_object.should_receive(:test).with(:foo, :bar)
@@ -56,6 +48,17 @@ describe RoundTable::Controllers::AbstractController do
     
     child.execute_action :do_something, :foo, :bar
   end # it should pass ... to its parent ...
+  
+  it "if root controller, should send a text notice for unknown actions" do
+    mock_object = double('mock')
+    mock_object.should_receive(:print).with(/.+/)
+    
+    subject.add_listener :text_output, Proc.new { |event|
+      mock_object.print event[:text]
+    } # listener :text_output
+    
+    subject.execute_action :unknown_action
+  end # it ... should send a text notice
   
   it "can list actions known to itself and its ancestors" do
     parent = RoundTable::Mock::Controllers::MockController.new
