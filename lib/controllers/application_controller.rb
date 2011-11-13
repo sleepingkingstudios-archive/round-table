@@ -2,15 +2,18 @@
 
 require 'controllers/controllers'
 require 'controllers/base_controller'
+require 'knights/knight'
 require 'knights/knight_manager'
 require 'util/text_processor'
 
 module RoundTable::Controllers
   class ApplicationController < BaseController
+    include RoundTable::Knights
     include RoundTable::Util
     
     def initialize
-      @knights = RoundTable::Knights::KnightManager.new
+      @knights = KnightManager.new
+      @current_knight = nil
       
       super
     end # method initialize
@@ -22,12 +25,19 @@ module RoundTable::Controllers
           " prompted for a confirmation. To skip the confirmation, type" +
           " \"quit force\", however, this may cause any unsaved data to be " +
           " lost."
+      when "force"
+        knight = @current_knight || Knight.new
+        self.puts knight.message :quit
+        self.dispatch_event Event.new :quit_application
       else
         self.puts "Are you sure you want to quit? (yes/no)"
         self.print "> "
         input = self.gets.strip
         
+        knight = @current_knight || Knight.new
+        
         if self.token_to_boolean(input)
+          self.puts knight.message :quit
           self.dispatch_event Event.new :quit_application
         else
           self.puts "Please enter an action."
@@ -46,7 +56,7 @@ module RoundTable::Controllers
           @knights.list.join(", ") + ". To load a module, type \"load\"" +
           " followed by the name of the module."
       else
-        unless self.children.count == 0
+        unless @current_knight.nil?
           self.puts "There is already a module loaded. To load a new module," +
             " exit out of the current module and then type \"load\" followed" +
             " by the name of the module you wish to load."
@@ -74,10 +84,12 @@ module RoundTable::Controllers
           return
         end # if-else # loading error
         
+        @current_knight = knight
+        
         controller = knight.controller
         self.add_child controller
         
-        self.puts knight.message :initialize
+        self.puts knight.message :load
       end # case args.first
     end # action :load
   end # class ApplicationController

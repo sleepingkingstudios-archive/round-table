@@ -14,10 +14,12 @@ module RoundTable::Knights
     
     def message(*args)
       case args.map{|arg| arg.to_s }.join(" ").strip
-      when "initialize"
+      when "load"
         name = TextProcessor.to_snake_case(self.class.to_s.gsub(/\w+::/,'')).
           split("_").map{ |word| word.capitalize }.join(" ")
         "Initializing module #{name}."
+      when "quit"
+        "Thank you for playing!"
       else
         "This is a default message."
       end # case
