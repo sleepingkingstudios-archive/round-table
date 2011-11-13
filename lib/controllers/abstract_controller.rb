@@ -50,7 +50,7 @@ module RoundTable::Controllers
           return
         end # if
         
-        tokens << words.pop
+        tokens.unshift words.pop
       end # while
       
       self.missing_action(string, [])
