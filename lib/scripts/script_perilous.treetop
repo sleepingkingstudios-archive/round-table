@@ -6,7 +6,7 @@ require 'scripts/scripts'
 module RoundTable::Scripts
   grammar Script
     rule script
-      (expression)+ <Nodes::ScriptNode>
+      expr:expression rest:(";" [ \t\r\n]* script:script)? <Nodes::ScriptNode>
     end # rule script
     
     #############
@@ -38,7 +38,7 @@ module RoundTable::Scripts
     # Properties and Variables
     
     rule read_property
-      [a-zA-Z0-9]+ <Nodes::ReadPropertyNode>
+      subject:"" property:[a-zA-Z0-9]+ <Nodes::ReadPropertyNode>
     end # rule read_property
     
     rule write_property

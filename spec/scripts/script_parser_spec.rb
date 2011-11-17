@@ -16,14 +16,14 @@ describe RoundTable::Scripts::ScriptParser do
   it "can parse integer scalars" do
     [0, 1, -1, 10, 1337].each do |integer|
       # Kernel.puts "parsing integer \"#{integer}\"..."
-      subject.parse("#{integer}", :root => :integer).call().should == integer
+      subject.parse("#{integer}", :root => :integer).call(@env).should == integer
     end # each
   end # it can parse integer scalars do
   
   it "can parse symbol scalars" do
     [:foo, :bar, :_baz, :__bizzle__, :wibble_wobble].each do |symbol|
       # Kernel.puts "parsing symbol \":#{symbol}\"..."
-      subject.parse(":#{symbol}", :root => :symbol).call().should == symbol
+      subject.parse(":#{symbol}", :root => :symbol).call(@env).should == symbol
     end # each
   end # it can parse symbol scalars
   
@@ -36,20 +36,20 @@ describe RoundTable::Scripts::ScriptParser do
         " this son of York",
     ].each do |string|
       # Kernel.puts "parsing string \"#{string}\"..."
-      subject.parse("\"#{string}\"", :root => :string).call().should == string
+      subject.parse("\"#{string}\"", :root => :string).call(@env).should == string
     end # each
   end # it can parse plain strings
   
   it "can parse scalars as scalars" do
-    subject.parse("13", :root => :scalar).call().should == 13
-    subject.parse(":foo", :root => :scalar).call().should == :foo
-    subject.parse("\"Hello, world!\"", :root => :scalar).call().should == "Hello, world!"
+    subject.parse("13", :root => :scalar).call(@env).should == 13
+    subject.parse(":foo", :root => :scalar).call(@env).should == :foo
+    subject.parse("\"Hello, world!\"", :root => :scalar).call(@env).should == "Hello, world!"
   end # it can parse scalars as scalars
   
   it "can parse scalars as expressions" do
-    subject.parse("13", :root => :expression).call().should == 13
-    subject.parse(":foo", :root => :expression).call().should == :foo
-    subject.parse("\"Hello, world!\"", :root => :expression).call().should == "Hello, world!"
+    subject.parse("13", :root => :expression).call(@env).should == 13
+    subject.parse(":foo", :root => :expression).call(@env).should == :foo
+    subject.parse("\"Hello, world!\"", :root => :expression).call(@env).should == "Hello, world!"
   end # it can parse scalars as expressions
   
   ###########
@@ -84,7 +84,7 @@ describe RoundTable::Scripts::ScriptParser do
   
   it "can parse function calls as expressions" do
     @env.should_receive(:send).with(:wibble)
-    subject.parse("wibble()").call(@env)
+    subject.parse("wibble()", :root => :expression).call(@env)
     
     string = "foo(0, :bar, \"baz\")"
     parsed = subject.parse(string, :root => :expression)
@@ -193,7 +193,21 @@ describe RoundTable::Scripts::ScriptParser do
     subject.parse("$bar = \"baz\"", :root => :expression).call(@env)
   end # can parse global accessors and mutators as expressions
   
-  #############
-  # Expressions
+  #########################
+  # Scripts and Expressions
+  
+  it "can parse a sequence of expressions as a script" do
+    @env.stub(:get)
+    @env.stub(:set)
+    @env.stub(:send)
+    
+    @env.should_receive(:get).with(:foo)
+    @env.should_receive(:set).with(:bar, "baz")
+    @env.should_receive(:send).with(:wibble, :wobble)
+    
+    string = "foo; bar = \"baz\"; wibble( :wobble )"
+    parsed = subject.parse(string)
+    parsed.call(@env)
+  end # it can parse ... a script
   
 end # describe ScriptParser
