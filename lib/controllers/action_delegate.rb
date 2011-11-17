@@ -25,7 +25,7 @@ module RoundTable::Controllers
     
     def gets
       event = Event.new :text_input
-      dispatch_event event
+      dispatch_event event, :bubbles => :true
       event[:text]
     end # method gets
     

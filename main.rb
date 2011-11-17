@@ -40,4 +40,6 @@ interface = RoundTable::Interfaces::TerminalInterface.new controller
 # Begin Program
 puts "Welcome to the Round Table interactive adventure platform"
 
+controller.execute_action :load, "Monster Catcher"
+
 interface.io_loop

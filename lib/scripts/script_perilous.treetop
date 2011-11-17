@@ -1,0 +1,85 @@
+# lib/scripts/script_perilous.treetop
+
+require 'treetop'
+require 'scripts/scripts'
+
+module RoundTable::Scripts
+  grammar Script
+    rule script
+      (expression)+ <Nodes::ScriptNode>
+    end # rule script
+    
+    #############
+    # Expressions
+    
+    rule expression
+      scalar /
+      function_call /
+      write_global_variable /
+      write_property /
+      read_global_variable /
+      read_property # this should always be last
+      ""
+      <Nodes::ExpressionNode>
+    end # rule expression
+    
+    ###########
+    # Functions
+    
+    rule function_call
+      function:[a-zA-Z0-9_]+ "(" " "? args:argument_list? " "? ")" <Nodes::FunctionCallNode>
+    end # rule function_call
+    
+    rule argument_list
+      first:expression rest:("," " "? args:argument_list)* <Nodes::ArgumentListNode>
+    end # rule function_argument_list
+    
+    ##########################
+    # Properties and Variables
+    
+    rule read_property
+      [a-zA-Z0-9]+ <Nodes::ReadPropertyNode>
+    end # rule read_property
+    
+    rule write_property
+      property:[a-zA-Z0-9]+ " "? "=" " "? value:expression <Nodes::WritePropertyNode>
+    end # rule write_property
+    
+    rule read_global_variable
+      "$" property:[a-zA-Z0-9]+ <Nodes::ReadGlobalVariableNode>
+    end # rule read_global_variable
+    
+    rule write_global_variable
+      "$" property:[a-zA-Z0-9]+ " "? "=" " "? value:expression <Nodes::WriteGlobalVariableNode>
+    end # rule write_global_variable
+    
+    #########
+    # Scalars
+    
+    rule scalar
+      (integer / symbol / string) "" <Nodes::ScalarNode>
+    end # rule scalar
+    
+    #########
+    # Strings
+    
+    rule string
+      "\"" plain_string "\"" <Nodes::StringNode>
+    end # rule string
+    
+    rule plain_string
+      [^"]* <Nodes::PlainStringNode> # ignore this comment"
+    end # rule plain_string
+    
+    ###############
+    # Other Scalars
+    
+    rule integer
+      "-"? [0-9]+ <Nodes::IntegerNode>
+    end # rule integer
+    
+    rule symbol
+      ":" [a-zA-Z_]+ <Nodes::SymbolNode>
+    end # rule symbol
+  end # grammar Script
+end # module RoundTable::Scripts

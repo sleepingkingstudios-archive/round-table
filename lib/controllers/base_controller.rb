@@ -19,12 +19,22 @@ module RoundTable::Controllers
           " information on an action, type the action followed by" +
           " \"help\"."
       else
-        if self.has_action? args.first.to_s
-          self.execute_action args.first, "help"
-        else
-          self.puts "I'm sorry, I don't recognize that action. For a list" +
-            " of all available actions, type \"what\"."
-        end # if-else
+        words = args
+        tokens = Array.new
+
+        until words.empty?
+          action = words.join("_")
+
+          if self.leaf.list_all_actions.include? action
+            self.leaf.execute_action(action, "help")
+            return
+          end # if
+
+          tokens.unshift words.pop
+        end # while
+        
+        self.puts "I'm sorry, I don't recognize that action. For a list" +
+          " of all available actions, type \"what\"."
       end # case args.first
     end # action help
     
@@ -37,7 +47,8 @@ module RoundTable::Controllers
           " \"help\"."
       else
         self.puts "The following actions are available: " +
-          self.list_all_actions.join(", ") + "."
+          self.list_all_actions.map{ |action| action.tr('_', ' ') }
+          .join(", ") + "."
       end # case args.first
     end # action what
   end # class BaseController

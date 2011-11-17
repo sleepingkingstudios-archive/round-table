@@ -39,6 +39,11 @@ module RoundTable::Controllers
     # Parsing Input Strings
     
     def parse(string)
+      if string.empty?
+        self.puts "Please enter an action."
+        return
+      end # if
+      
       words = self.tokenize string
       tokens = Array.new
       
