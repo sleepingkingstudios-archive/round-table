@@ -5,6 +5,101 @@ require 'scripts/scriptable'
 require 'scripts/script_parser'
 
 describe RoundTable::Scripts::ScriptParser do
+  before :each do
+    @env = mock('callable')
+    @env.stub(:send)
+  end # before :each
+  
+  #############################################################################
+  # LITERALS
+  #############################################################################
+  
+  it "can parse integer literals" do
+    [0, 1, -1, 10, 1337].each do |integer|
+      [:integer, :literal, :term, :expression].each do |root|
+        # Kernel.puts "parsing integer \":#{integer}\" as #{root}..."
+        subject.parse("#{integer}", :root => root).call(@env).should == integer
+      end # each root
+    end # each
+  end # it can parse integer literals
+  
+  it "can parse symbol literals" do
+    [:foo, :bar, :_baz, :__bizzle__, :wibble_wobble].each do |symbol|
+      [:symbol, :literal, :term, :expression].each do |root|
+        # Kernel.puts "parsing symbol \":#{symbol}\" as #{root}..."
+        subject.parse(":#{symbol}", :root => root).call(@env).should == symbol
+      end # each root
+    end # each
+  end # it can parse symbol literals
+  
+  it "can parse plain string literals" do
+    [ "Hello, world!",
+      "This is a \\\"test\\\" string\n",
+      "\t- I hope\nyou\nlike it!\r\n",
+      "Now is the the winter of our discontent, turned glorious summer by" +
+        " this son of York",
+    ].each do |string|
+      [:string, :literal, :term, :expression].each do |root|
+        # Kernel.puts "parsing string \":#{string}\" as #{root}..."
+        subject.parse("\"#{string}\"", :root => root).call(@env).should == string
+      end # each root
+    end # each
+  end # it can parse plain string literals
+  
+  #############################################################################
+  # TERMS AND EXPRESSIONS
+  #############################################################################
+  
+  it "can parse identifiers" do
+    ["foo", "_bar", "BAZ", "__bizzle__", "wibble_wobble"].each do |identifier|
+      subject.parse(identifier, :root => :identifier).text_value.should == identifier
+    end # each
+    
+    ["99bottles", "of beer", "@on_the_wall", ":takeOneDown", "[pass it around]"].each do |identifier|
+      subject.parse(identifier, :root => :identifier).should be nil
+    end # each
+  end # it can parse identifiers
+  
+  it "can parse method identifiers" do
+    ["foo=", "_bar=", "[]", "[]="].each do |identifier|
+      subject.parse(identifier, :root => :method_identifier).text_value.should == identifier
+    end # each
+  end # it can parse method_identifiers
+  
+  #############################################################################
+  # METHODS
+  #############################################################################
+  
+  it "can parse argument lists" do
+    { "0" => [0],
+      "0, :foo, \"bar\"" => [0, :foo, "bar"]
+    }.each do |string, ary|
+      subject.parse(string, :root => :argument_list).call(@env).should == ary
+    end # each
+  end # it can parse argument lists
+  
+  it "can parse method calls" do
+    [ { :string => "foo()",
+        :function => :foo,
+        :args => [],
+        :result => "FOO" },
+      { :string => "baz(0, :foo, \"bar\")",
+        :function => :baz,
+        :args => [0, :foo, "bar"],
+        :result => :too_strange },
+      { :string => "[]=(:wibble, :wobble)",
+        :function => :[]=,
+        :args => [:wibble, :wobble],
+        :result => :wobble }
+    ].each do |method_call|
+      args = [method_call[:function]] + method_call[:args]
+      @env.stub(:send) { method_call[:result] }
+      @env.should_receive(:send).with(*args)
+      subject.parse(method_call[:string], :root => :method_call).call(@env).should == method_call[:result]
+    end # each
+  end # it can parse method calls
+  
+=begin # block comment  
   #####################
   # Scalars and Strings
   
@@ -209,5 +304,5 @@ describe RoundTable::Scripts::ScriptParser do
     parsed = subject.parse(string)
     parsed.call(@env)
   end # it can parse ... a script
-  
+=end # block comment
 end # describe ScriptParser

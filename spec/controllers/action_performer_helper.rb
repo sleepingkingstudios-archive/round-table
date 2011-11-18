@@ -56,6 +56,21 @@ shared_examples "an ActionPerformer" do
     subject.action_foo
   end # it can define actions on itself
   
+  it "can alias actions" do
+    mock_object = double('mock')
+    mock_object.should_receive(:baz)
+    
+    subject.class.instance_eval {
+      action :foo do
+        mock_object.baz
+      end # action :foo
+      
+      alias_action :bar, :foo
+    } # end class.instance_eval
+    
+    subject.execute_action :bar
+  end # it can alias actions
+  
   it "can define a multi-word action" do
     mock_object = double('mock')
     mock_object.should_receive(:baz)

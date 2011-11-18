@@ -18,13 +18,20 @@ module RoundTable::Controllers
         
         define_method "action_#{name}", block
       end # class method action
+      
+      def alias_action(new_name, old_name)
+        alias_method :"action_alias_#{new_name}", :"action_#{old_name}"
+      end # class method alias_action
     end # class << self
     
     def execute_action(action, *tokens)
-      method = "action_#{action.to_s.tr(" ", "_")}"
       logger.debug "#{self.class.to_s.gsub(/w+::/, "")}: executing action \"#{action}\", tokens = #{tokens.inspect}"
       
       if self.has_action? action
+        method = "action_#{action.to_s.tr(" ", "_")}"
+        self.send method, *tokens
+      elsif self.has_alias? action
+        method = "action_alias_#{action.to_s.tr(" ", "_")}"
         self.send method, *tokens
       else
         self.missing_action action, *tokens
@@ -35,6 +42,10 @@ module RoundTable::Controllers
       raise NoMethodError.new("undefined action `#{action}' for #{self}")
     end # method action_missing
     
+    def has_alias?(action)
+      return self.respond_to? "action_alias_#{action.to_s.tr(" ", "_")}"
+    end # method has_alias?
+    
     def has_action?(action)
       return self.respond_to? "action_#{action.to_s.tr(" ", "_")}"
     end # method has_action?
@@ -43,7 +54,7 @@ module RoundTable::Controllers
       actions = Array.new
       self.methods.each do |method|
         method = method.to_s
-        if method =~ /^action_/
+        if method =~ /^action_/ && !(method =~ /^action_alias_/)
           actions << method.gsub(/^action_/,'')
         end # if
       end # each

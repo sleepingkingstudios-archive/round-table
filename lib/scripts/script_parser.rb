@@ -10,6 +10,67 @@ module RoundTable::Scripts
   module Nodes
     include RoundTable::Scripts
     
+    ###########################################################################
+    # LITERAL NODES
+    ###########################################################################
+    
+    module IntegerNode
+      def call(env)
+        self.text_value.to_i
+      end # method call
+    end # module IntegerNode
+  
+    module SymbolNode
+      def call(env)
+        self.text_value[1..-1].intern
+      end # method call
+    end # module SymbolNode
+    
+    module StringNode
+      def call(env)
+        self.elements.map{ |elem| elem.respond_to?(:call) ? elem.call(env) : nil }.join
+      end # method call
+    end # module StringNode
+    
+    module StringSectionNode
+      def call(env)
+        self.text_value
+      end # method call
+    end # module StringSectionNode
+    
+    ###########################################################################
+    # METHOD NODES
+    ###########################################################################
+    
+    module MethodCallNode
+      def call(env, subject = nil)
+        subject ||= env
+        function = self.function.text_value.intern
+        
+        # Kernel.puts "MethodCallNode(): subject = #{subject}, function = :#{function}, args = \"#{args.text_value}\""
+        
+        if args.empty?
+          subject.send function
+        else
+          subject.send function, *(args.call(@env))
+        end # if-else
+      end # method call
+    end # module MethodCallNode
+    
+    module ArgumentListNode
+      def call(env)
+        args = Array.new << arg
+        
+        # Kernel.puts "ArgumentListNode(): arg = \"#{arg.text_value}\", rest = \"#{rest.text_value}\""
+        rest.elements.each do |elem|
+          args << elem.elements.keep_if{ |elem| elem.nonterminal? }.first
+        end # each
+        
+        args.map{ |arg| arg.call(@env) }
+      end # method call
+    end # module ArgumentListNode
+    
+=begin
     module ScriptNode
       def expressions
         ary = Array.new
@@ -55,20 +116,6 @@ module RoundTable::Scripts
         subject.send function, *(argument_list)
       end # method call
     end # module FunctionCallNode
-    
-    module ArgumentListNode
-      def call(env)
-        args = [self.first.call(env)]
-        
-        unless rest.nil? || (elems = rest.elements).empty?
-          elems = rest.elements
-          args += elems.first.args.call(env)
-        end # unless
-        
-        # Kernel.puts "processing ArgumentListNode, raw = \"#{self.text_value}\", args = #{args}}"
-        args
-      end # method call
-    end # module ArgumentListNode
     
     #############################
     # Property and Variable Nodes
@@ -119,31 +166,14 @@ module RoundTable::Scripts
       end # method call
     end # module ScalarNode
   
-    module IntegerNode
-      def call(env)
-        self.text_value.to_i
-      end # method call
-    end # module IntegerNode
-  
-    module SymbolNode
-      def call(env)
-        self.text_value[1..-1].intern
-      end # method call
-    end # module SymbolNode
-  
     ##############
     # String Nodes
   
-    module StringNode
-      def call(env)
-        self.elements.map{ |elem| elem.respond_to?(:call) ? elem.call(env) : nil }.join
-      end # method call
-    end # module StringNode
-  
-    module PlainStringNode
-      def call(env)
-        self.text_value
-      end # method call
-    end # module PlainStringNode
+    # module PlainStringNode
+    #   def call(env)
+    #     self.text_value
+    #   end # method call
+    # end # module PlainStringNode
+=end
   end # module Nodes
 end # module RoundTable::Scripts::ScriptPerilous

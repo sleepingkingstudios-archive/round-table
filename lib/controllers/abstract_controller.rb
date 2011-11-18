@@ -14,6 +14,7 @@ module RoundTable::Controllers
       @parent = nil
       @children = Array.new
     end # method initialize
+    attr_reader :input_string, :input_action, :input_args
     
     ###################
     # Executing Actions
@@ -39,6 +40,7 @@ module RoundTable::Controllers
     # Parsing Input Strings
     
     def parse(string)
+      @input_string = string
       if string.empty?
         self.puts "Please enter an action."
         return
@@ -51,6 +53,9 @@ module RoundTable::Controllers
         action = words.join("_")
         
         if self.leaf.list_all_actions.include? action
+          @input_action = @input_string.match(/^#{words.join(" ")}/i).to_a.first
+          @input_args   = @input_string.gsub(/^#{@input_action} /i, "")
+          
           self.leaf.execute_action(action, *tokens)
           return
         end # if

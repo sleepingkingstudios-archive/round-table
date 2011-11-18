@@ -29,6 +29,26 @@ describe RoundTable::Controllers::AbstractController do
     subject.parse string
   end # it should parse text input
   
+  it "should store input strings, actions, and args" do
+    mock = double('callable')
+    mock.stub(:call)
+    
+    MockController.class_eval {
+      action :foo_bar do |*args|
+        mock.call(*args)
+      end # end action :foo_bar
+    } # end class_eval
+    subject = MockController.new
+    
+    mock.should_receive(:call).with("wibble", "wobble")
+    
+    string = "foo bar Wibble Wobble"
+    subject.parse string
+    subject.input_string.should == string
+    subject.input_action.should == "foo bar"
+    subject.input_args.should == "Wibble Wobble"
+  end # it should store input strings, actions, and args
+  
   it "can parse multi-word actions" do
     mock = double('callable')
     mock.should_receive(:look)
