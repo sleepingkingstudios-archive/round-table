@@ -27,10 +27,13 @@ module RoundTable::Scripts
     def script_property(key, params = {})
       @__script_helper__.properties[key] = params
     end # method script_property
+    private :script_property
     
-    def script_function(key, function)
-      raise ArgumentError.new("function must respond to :call") unless function.respond_to?(:call)
+    def script_function(key, function = nil, &block)
+      raise ArgumentError.new("function must respond to :call") unless function.respond_to?(:call) || block_given?
+      function ||= Proc.new &block
       @__script_helper__.functions[key] = function
     end # method script_function
+    private :script_function
   end # module Scriptable
 end # module RoundTable::Scripts

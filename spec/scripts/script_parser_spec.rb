@@ -5,9 +5,25 @@ require 'scripts/scriptable'
 require 'scripts/script_parser'
 
 describe RoundTable::Scripts::ScriptParser do
+  include RoundTable::Scripts
+  
+  def mock_scriptable(&block)
+    recv = Object.new
+    recv.extend Scriptable
+    recv.instance_eval do initialize_scripting end
+    recv.instance_eval &block if block_given?
+    recv
+  end # method mock_scriptable
+  
   before :each do
     @env = mock('callable')
     @env.stub(:send)
+    
+    @receiver = mock_scriptable()
+    @receiver.script.class.class_eval do
+      class_variable_set :@@global_variables, Hash.new
+      class_variable_set :@@global_functions, Hash.new
+    end # class_eval
   end # before :each
   
   #############################################################################
@@ -18,7 +34,7 @@ describe RoundTable::Scripts::ScriptParser do
     [0, 1, -1, 10, 1337].each do |integer|
       [:integer, :literal, :term, :expression].each do |root|
         # Kernel.puts "parsing integer \":#{integer}\" as #{root}..."
-        subject.parse("#{integer}", :root => root).call(@env).should == integer
+        subject.parse("#{integer}", :root => root).call(@receiver).should == integer
       end # each root
     end # each
   end # it can parse integer literals
@@ -27,7 +43,7 @@ describe RoundTable::Scripts::ScriptParser do
     [:foo, :bar, :_baz, :__bizzle__, :wibble_wobble].each do |symbol|
       [:symbol, :literal, :term, :expression].each do |root|
         # Kernel.puts "parsing symbol \":#{symbol}\" as #{root}..."
-        subject.parse(":#{symbol}", :root => root).call(@env).should == symbol
+        subject.parse(":#{symbol}", :root => root).call(@receiver).should == symbol
       end # each root
     end # each
   end # it can parse symbol literals
@@ -41,7 +57,7 @@ describe RoundTable::Scripts::ScriptParser do
     ].each do |string|
       [:string, :literal, :term, :expression].each do |root|
         # Kernel.puts "parsing string \":#{string}\" as #{root}..."
-        subject.parse("\"#{string}\"", :root => root).call(@env).should == string
+        subject.parse("\"#{string}\"", :root => root).call(@receiver).should == string
       end # each root
     end # each
   end # it can parse plain string literals
@@ -66,6 +82,20 @@ describe RoundTable::Scripts::ScriptParser do
     end # each
   end # it can parse method_identifiers
   
+  it "can get global variables" do
+    @receiver.script.set_global :foo, "FOO"
+    @receiver.script.set_global :bar, "BAR"
+    @receiver.script.set_global :baz, "BAZ"
+    
+    [:foo, :bar, :baz].each do |global|
+      [:global_variable, :term, :expression].each do |root|
+        string = "$#{global.to_s}"
+        # Kernel.puts "parsing global variable \":#{string}\" as #{root}..."
+        subject.parse(string, :root => root).call(@receiver).should == global.to_s.upcase
+      end # each
+    end # method each
+  end # it can get global variables
+  
   #############################################################################
   # METHODS
   #############################################################################
@@ -80,229 +110,103 @@ describe RoundTable::Scripts::ScriptParser do
   
   it "can parse method calls" do
     [ { :string => "foo()",
-        :function => :foo,
+        :message => :foo,
         :args => [],
         :result => "FOO" },
       { :string => "baz(0, :foo, \"bar\")",
-        :function => :baz,
+        :message => :baz,
         :args => [0, :foo, "bar"],
         :result => :too_strange },
       { :string => "[]=(:wibble, :wobble)",
-        :function => :[]=,
+        :message => :[]=,
         :args => [:wibble, :wobble],
         :result => :wobble }
     ].each do |method_call|
-      args = [method_call[:function]] + method_call[:args]
-      @env.stub(:send) { method_call[:result] }
-      @env.should_receive(:send).with(*args)
-      subject.parse(method_call[:string], :root => :method_call).call(@env).should == method_call[:result]
+      @receiver.instance_eval {
+        script_function method_call[:message] { method_call[:result] }
+      } # end instance_eval
+      
+      [:method_call].each do |root|
+        # Kernel.puts "parsing operation \":#{method_call[:string]}\" as #{root}..."
+        args = [method_call[:message]] + method_call[:args]
+        subject.parse(method_call[:string], :root => root).call(@receiver).should == method_call[:result]
+      end # each root
     end # each
   end # it can parse method calls
   
-=begin # block comment  
-  #####################
-  # Scalars and Strings
-  
-  before :each do
-    @env = mock('callable')
-    @env.stub(:send)
-  end # before :each
-  
-  it "can parse integer scalars" do
-    [0, 1, -1, 10, 1337].each do |integer|
-      # Kernel.puts "parsing integer \"#{integer}\"..."
-      subject.parse("#{integer}", :root => :integer).call(@env).should == integer
-    end # each
-  end # it can parse integer scalars do
-  
-  it "can parse symbol scalars" do
-    [:foo, :bar, :_baz, :__bizzle__, :wibble_wobble].each do |symbol|
-      # Kernel.puts "parsing symbol \":#{symbol}\"..."
-      subject.parse(":#{symbol}", :root => :symbol).call(@env).should == symbol
-    end # each
-  end # it can parse symbol scalars
-  
-  it "can parse plain strings" do
-    [
-      "Hello, world!",
-      "This is a test string\n",
-      "\t- I hope\nyou\nlike it!\r\n",
-      "Now is the the winter of our discontent, turned glorious summer by" +
-        " this son of York",
-    ].each do |string|
-      # Kernel.puts "parsing string \"#{string}\"..."
-      subject.parse("\"#{string}\"", :root => :string).call(@env).should == string
-    end # each
-  end # it can parse plain strings
-  
-  it "can parse scalars as scalars" do
-    subject.parse("13", :root => :scalar).call(@env).should == 13
-    subject.parse(":foo", :root => :scalar).call(@env).should == :foo
-    subject.parse("\"Hello, world!\"", :root => :scalar).call(@env).should == "Hello, world!"
-  end # it can parse scalars as scalars
-  
-  it "can parse scalars as expressions" do
-    subject.parse("13", :root => :expression).call(@env).should == 13
-    subject.parse(":foo", :root => :expression).call(@env).should == :foo
-    subject.parse("\"Hello, world!\"", :root => :expression).call(@env).should == "Hello, world!"
-  end # it can parse scalars as expressions
-  
-  ###########
-  # Functions
-  
-  it "can parse function calls" do
-    string = "foo(0, :bar, \"baz\")"
-    parsed = subject.parse(string, :root => :function_call)
-    # Kernel.puts parsed.inspect
-    
-    @env.should_receive(:send).with(:foo, 0, :bar, "baz")
-    parsed.call(@env)
-  end # it can parse function calls
-  
-  it "can parse nested function calls" do
-    received_args = nil
-    @env.stub(:send) { |*args|
-      case args.first
-      when :foo
-        :wibble
-      when :bar
-        received_args = args[1..-1]
-      end # case arg
-    } # end stub
-    
-    string = "bar( foo() )"
-    parsed = subject.parse(string, :root => :function_call)
-    parsed.call(@env)
-    
-    received_args.should include(:wibble)
-  end # "it can parse nested function calls" do
-  
-  it "can parse function calls as expressions" do
-    @env.should_receive(:send).with(:wibble)
-    subject.parse("wibble()", :root => :expression).call(@env)
-    
-    string = "foo(0, :bar, \"baz\")"
-    parsed = subject.parse(string, :root => :expression)
-    
-    @env.should_receive(:send).with(:foo, 0, :bar, "baz")
-    parsed.call(@env)
-  end # it can parse function calls as expressions
-  
-  ##########################
-  # Properties and Variables
-  
   it "can parse property accessors" do
-    @env.stub(:get) { |*args|
-      case args.shift
-      when :foo
-        "fo'shizzle!"
-      when :bar
-        "Kampai!"
-      else
-        raise ArgumentError.new
-      end # case args.shift
-    } # end stub get
-    
-    subject.parse("foo", :root => :read_property).call(@env).should == "fo'shizzle!"
-    subject.parse("bar", :root => :read_property).call(@env).should == "Kampai!"
+    [:foo, :bar, :baz].each do |symbol|
+      expect { @receiver.script.get symbol }.to raise_error NoMethodError
+      expect { @receiver.script.set symbol, symbol.to_s.upcase }.to raise_error NoMethodError
+      
+      @receiver.instance_eval {
+        define_singleton_method "#{symbol}"  do instance_variable_get "@#{symbol}" end
+        define_singleton_method "#{symbol}=" do |value| instance_variable_set "@#{symbol}", value end
+        script_property symbol
+      } # end instance_eval
+      @receiver.script.set symbol, symbol.to_s.upcase
+      
+      [:property_accessor].each do |root|
+        string = "#{symbol.to_s}"
+        # Kernel.puts "parsing property accessor #{string} as #{root}..."
+        subject.parse(string, :root => root).call(@receiver).should == symbol.to_s.upcase
+      end # each root
+    end # each
   end # it can parse property accessors
   
-  it "can parse property mutators" do
-    foo, bar, baz = nil
-    @env.stub(:send) { |*args|
-      case args.shift
-      when :wibble
-        :wobble
-      else
-        raise ArgumentError.new
-      end # args.shift
-    } # end stub send
-    @env.stub(:set) { |*args|
-      case args.shift
-      when :foo
-        foo = args
-      when :bar
-        bar = args
-      when :baz
-        baz = args
-      else
-        raise ArgumentError.new
-      end # case args.shift
-    } # end stub set
-    
-    subject.parse("foo = :foo", :root => :write_property).call(@env).should == [:foo]
-    subject.parse("bar = \"bar\"", :root => :write_property).call(@env).should == ["bar"]
-    subject.parse("baz = wibble()", :root => :write_property).call(@env).should == [:wobble]
-  end # it can parse property mutators
+  #############################################################################
+  # RECEIVER OPERATIONS
+  #############################################################################
   
-  it "can parse accessors and mutators as expressions" do
-    @env.stub(:get)
-    @env.stub(:set)
+  it "can parse method calls with an explicit receiver" do
+    mock_foo = mock_scriptable() {
+      script_function :bar do :bizzle end
+    } # end instance_eval
     
-    @env.should_receive(:get).with(:foo)
-    @env.should_receive(:set).with(:bar, "baz")
+    @receiver.script.set_global :foo, mock_foo
     
-    subject.parse("foo", :root => :expression).call(@env)
-    subject.parse("bar = \"baz\"", :root => :expression).call(@env)
-  end # it can parse accessors and mutators as expressions
+    string = "$foo.bar(:baz)"
+    parsed = subject.parse(string, :root => :receiver_operation)
+    parsed.call(@receiver).should == :bizzle
+  end # it can parse method calls with an explicit receiver
   
-  it "can parse global variable accessors" do
-    @env.stub(:get_global) { |*args|
-      case args.shift
-      when :foo
-        "FOO"
-      else
-        raise ArgumentError.new
-      end # case args.shift
-    } # end stub get_global
+  it "can parse chained method calls" do
+    mock_baz = mock_scriptable() {
+      script_function :wibble do :wobble end
+    } # end instance_eval
     
-    @env.should_receive(:get_global).with(:foo)
+    mock_bar = mock_scriptable() {
+      script_function :baz do mock_baz end
+    } # end instance_eval
     
-    subject.parse("$foo", :root => :read_global_variable).call(@env).should == "FOO"
-  end # it can parse global variable accessors
+    mock_foo = mock_scriptable() {
+      script_function :bar do mock_bar end
+    } # end instance_eval
+    
+    @receiver.script.set_global :foo, mock_foo
+    
+    string = "$foo.bar().baz().wibble()"
+    parsed = subject.parse(string, :root => :receiver_operation)
+    parsed.call(@env).should == :wobble
+  end # it can parse chained method calls
   
-  it "can parse global variable mutators" do
-    foo = nil
-    @env.stub(:set_global) { |*args|
-      case args.shift
-      when :foo
-        foo = args.first
-      else
-        raise ArgumentError.new
-      end # case args.shift
-    } # end stub set_global
+  it "can parse chained property accessors" do
+    mock_bar = mock_scriptable() {
+      define_singleton_method :baz do :bizzle end
+      script_property :baz, :only => :read
+    } # end instance_eval
     
-    @env.should_receive(:set_global).with(:foo, "FOO")
+    mock_foo = mock_scriptable() {
+      define_singleton_method :bar do mock_bar end
+      script_property :bar, :only => :read
+    } # end instance_eval
     
-    subject.parse("$foo = \"FOO\"", :root => :write_global_variable).call(@env).should == "FOO"
-  end # it can parse global variable mutators
-  
-  it "can parse global accessors and mutators as expressions" do
-    @env.stub(:get_global)
-    @env.stub(:set_global)
+    @receiver.script.set_global :foo, mock_foo
     
-    @env.should_receive(:get_global).with(:foo)
-    @env.should_receive(:set_global).with(:bar, "baz")
+    string = "$foo.bar.baz"
+    # Kernel.puts "parsing string \"#{string}\" as receiver_operation..."
+    parsed = subject.parse(string, :root => :receiver_operation)
     
-    subject.parse("$foo", :root => :expression).call(@env)
-    subject.parse("$bar = \"baz\"", :root => :expression).call(@env)
-  end # can parse global accessors and mutators as expressions
-  
-  #########################
-  # Scripts and Expressions
-  
-  it "can parse a sequence of expressions as a script" do
-    @env.stub(:get)
-    @env.stub(:set)
-    @env.stub(:send)
-    
-    @env.should_receive(:get).with(:foo)
-    @env.should_receive(:set).with(:bar, "baz")
-    @env.should_receive(:send).with(:wibble, :wobble)
-    
-    string = "foo; bar = \"baz\"; wibble( :wobble )"
-    parsed = subject.parse(string)
-    parsed.call(@env)
-  end # it can parse ... a script
-=end # block comment
+    parsed.call(@receiver).should == :bizzle
+  end # it can parse chained property accessors
 end # describe ScriptParser

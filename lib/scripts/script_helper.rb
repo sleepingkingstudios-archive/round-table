@@ -35,11 +35,11 @@ module RoundTable::Scripts
       @parent.send :"#{key}=", value
     end # method set
     
-    def send(key, *args)
+    def call(key, *args)
       raise NoMethodError.new("function #{key} has not been registered for script access") unless @functions.include?(key)
       raise NoMethodError.new("function #{key} does not respond to :call") unless @functions[key].respond_to? :call
       @functions[key].call(*args)
-    end # method send
+    end # method call
     
     ################################
     # Global Variables and Functions
@@ -52,15 +52,15 @@ module RoundTable::Scripts
       @@global_variables[key] = value
     end # method set_global
     
-    def define_global(key, function)
-      raise ArgumentError.new("function must respond to :call") unless function.respond_to? :call
-      @@global_functions[key] = function
-    end # method define_global
-    
-    def send_global(key, *args)
-      raise NoMethodError.new("global function #{key} has not been defined") unless @@global_functions.include?(key)
-      raise NoMethodError.new("global function #{key} does not respond to :call") unless @@global_functions[key].respond_to? :call
-      @@global_functions[key].call(*args)
-    end # method send_global
+    # def define_global(key, function)
+    #   raise ArgumentError.new("function must respond to :call") unless function.respond_to? :call
+    #   @@global_functions[key] = function
+    # end # method define_global
+    # 
+    # def send_global(key, *args)
+    #   raise NoMethodError.new("global function #{key} has not been defined") unless @@global_functions.include?(key)
+    #   raise NoMethodError.new("global function #{key} does not respond to :call") unless @@global_functions[key].respond_to? :call
+    #   @@global_functions[key].call(*args)
+    # end # method send_global
   end # class ScriptHelper
 end # module RoundTable::Scripts

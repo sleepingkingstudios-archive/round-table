@@ -5,49 +5,32 @@ require 'scripts/scripts'
 
 module RoundTable::Scripts
   grammar Script
-    rule script
-      expr:expression rest:(";" [ \t\r\n]* script:script)? <Nodes::ScriptNode>
-    end # rule script
+    rule receiver_operation
+      receiver:term messages:("." message:(method_call / property_accessor))+ <Nodes::ReceiverOperationNode>
+    end # rule receiver_operation
     
-    #############
-    # Expressions
-    
-    # rule term
-    #   scalar /
-    #   read_global_variable /
-    #   "(" expression ")"
-    # end # rule term
-    
-    rule expression
-      term /
-      function_call /
-      write_global_variable /
-      write_property /
-      read_property # this should always be last
-      ""
-      <Nodes::ExpressionNode>
-    end # rule expression
-    
-    rule method_operation
-      subject:term "." method:(method_call / write_property / read_property)
-    end # rule method_call
-    
-    
+    rule property_accessor
+      property:identifier "" <Nodes::PropertyAccessorNode>
+    end # rule property_accessor
     
     rule method_call
-      function:method_identifier "(" " "? args:argument_list? " "? ")" <Nodes::MethodCallNode>
+      message:method_identifier "(" " "? args:argument_list? " "? ")" <Nodes::MethodCallNode>
     end # rule method_call
     
     rule expression
+      receiver_operation /
       term
     end # rule expression
     
     rule term
-      literal / global_variable
+      global_variable /
+      property_accessor /
+      method_call /
+      literal
     end # rule term
     
     rule global_variable
-      "$" identifier
+      "$" identifier <Nodes::GlobalVariableNode>
     end # method global_variable
     
     rule argument_list
@@ -85,32 +68,5 @@ module RoundTable::Scripts
     rule symbol
       ":" [a-zA-Z_]+ <Nodes::SymbolNode>
     end # rule symbol
-    
-    # DEPRECATED
-    # ###########
-    # # Functions
-    # 
-    # rule function_call
-    #   function:[a-zA-Z0-9_]+ "(" " "? args:argument_list? " "? ")" <Nodes::FunctionCallNode>
-    # end # rule function_call
-    # 
-    # ##########################
-    # # Properties and Variables
-    # 
-    # rule read_property
-    #   subject:"" property:[a-zA-Z0-9]+ <Nodes::ReadPropertyNode>
-    # end # rule read_property
-    # 
-    # rule write_property
-    #   property:[a-zA-Z0-9]+ " "? "=" " "? value:expression <Nodes::WritePropertyNode>
-    # end # rule write_property
-    # 
-    # rule read_global_variable
-    #   "$" property:[a-zA-Z0-9]+ <Nodes::ReadGlobalVariableNode>
-    # end # rule read_global_variable
-    # 
-    # rule write_global_variable
-    #   "$" property:[a-zA-Z0-9]+ " "? "=" " "? value:expression <Nodes::WriteGlobalVariableNode>
-    # end # rule write_global_variable
   end # grammar Script
 end # module RoundTable::Scripts
