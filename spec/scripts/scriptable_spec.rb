@@ -49,6 +49,11 @@ describe RoundTable::Scripts::Scriptable do
       subject.instance_eval {
         initialize_scripting
       } # end subject.instance_eval
+      
+      subject.script.class.class_eval {
+        class_variable_set :@@global_functions, Hash.new
+        class_variable_set :@@global_variables, Hash.new
+      } # end class_eval
     end # before :each
     
     it "can register properties as scriptable" do
@@ -92,21 +97,21 @@ describe RoundTable::Scripts::Scriptable do
       mock.stub(:call)
       
       subject.instance_eval {
-        self.define_singleton_method :call, Proc.new { |*vars|
+        self.define_singleton_method :test, Proc.new { |*vars|
           mock.call(*vars)
         } # end method call
         
-        script_function :call, self.method(:call)
-        script_function :call_again, Proc.new {
+        script_function :test, self.method(:test)
+        script_function :test_again, Proc.new {
           mock.call(:wibble, :wobble)
         } # end function call_again
       } # end subject.instance_eval
       
       mock.should_receive(:call).with(:foo, :bar)
-      subject.script.send :call, :foo, :bar
+      subject.script.call :test, :foo, :bar
       
       mock.should_receive(:call).with(:wibble, :wobble)
-      subject.script.send :call_again
+      subject.script.call :test_again
     end # it can register functions and methods ...
     
     ################################
@@ -141,7 +146,7 @@ describe RoundTable::Scripts::Scriptable do
       } # end global :foo
       
       mock.should_receive(:call).with(:bar, "baz")
-      subject.script.send_global(:foo, :bar, "baz")
+      subject.script.call_global(:foo, :bar, "baz")
     end # it can define and call global functions
   end # context when it has been initialized
 end # describe Scriptable

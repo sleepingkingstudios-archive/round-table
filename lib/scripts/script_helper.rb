@@ -38,6 +38,7 @@ module RoundTable::Scripts
     def call(key, *args)
       raise NoMethodError.new("function #{key} has not been registered for script access") unless @functions.include?(key)
       raise NoMethodError.new("function #{key} does not respond to :call") unless @functions[key].respond_to? :call
+      # Kernel.puts "call(): key = #{key}, args = #{args}, functions = #{@functions}"
       @functions[key].call(*args)
     end # method call
     
@@ -45,6 +46,7 @@ module RoundTable::Scripts
     # Global Variables and Functions
     
     def get_global(key)
+      # Kernel.puts "get_global(): key = #{key}, value = #{@@global_variables[key]}, globals = #{@@global_variables}"
       @@global_variables[key]
     end # method get_global
     
@@ -52,15 +54,15 @@ module RoundTable::Scripts
       @@global_variables[key] = value
     end # method set_global
     
-    # def define_global(key, function)
-    #   raise ArgumentError.new("function must respond to :call") unless function.respond_to? :call
-    #   @@global_functions[key] = function
-    # end # method define_global
-    # 
-    # def send_global(key, *args)
-    #   raise NoMethodError.new("global function #{key} has not been defined") unless @@global_functions.include?(key)
-    #   raise NoMethodError.new("global function #{key} does not respond to :call") unless @@global_functions[key].respond_to? :call
-    #   @@global_functions[key].call(*args)
-    # end # method send_global
+    def define_global(key, function)
+      raise ArgumentError.new("function must respond to :call") unless function.respond_to? :call
+      @@global_functions[key] = function
+    end # method define_global
+    
+    def call_global(key, *args)
+      raise NoMethodError.new("global function #{key} has not been defined") unless @@global_functions.include?(key)
+      raise NoMethodError.new("global function #{key} does not respond to :call") unless @@global_functions[key].respond_to? :call
+      @@global_functions[key].call(*args)
+    end # method send_global
   end # class ScriptHelper
 end # module RoundTable::Scripts
