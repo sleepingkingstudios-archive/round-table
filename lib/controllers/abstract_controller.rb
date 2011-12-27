@@ -30,6 +30,12 @@ module RoundTable::Controllers
       end # if-else
     end # method missing_action
     
+    def list_all_aliases
+      aliases = self.list_own_aliases
+      aliases += @parent.list_all_aliases unless self.root?
+      aliases.compact.uniq.sort
+    end # method list_all_aliases
+    
     def list_all_actions
       actions = self.list_own_actions
       actions += @parent.list_all_actions unless self.root?
@@ -51,8 +57,11 @@ module RoundTable::Controllers
       
       until words.empty?
         action = words.join("_")
+        logger.debug "#{self.class}: action = #{action}, rest = #{words.inspect}"
         
-        if self.leaf.list_all_actions.include? action
+        actions = self.leaf.list_all_actions + self.leaf.list_all_aliases
+        
+        if actions.include? action
           @input_action = @input_string.match(/^#{words.join(" ")}/i).to_a.first
           @input_args   = @input_string.gsub(/^#{@input_action} /i, "")
           

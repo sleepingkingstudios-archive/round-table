@@ -24,6 +24,15 @@ module RoundTable::Controllers
       end # class method alias_action
     end # class << self
     
+    def define_singleton_action(name, &block)
+      raise ArgumentError.new("expected a block") unless block_given?
+      
+      name = name.to_s.downcase.gsub(/[\s-]+/, '_').strip
+      logger.debug "#{self.to_s}: defining singleton action \"#{name}\""
+      
+      define_singleton_method "action_#{name}", block
+    end # method define_singleton_action
+    
     def execute_action(action, *tokens)
       logger.debug "#{self.class.to_s.gsub(/w+::/, "")}: executing action \"#{action}\", tokens = #{tokens.inspect}"
       
@@ -49,6 +58,17 @@ module RoundTable::Controllers
     def has_action?(action)
       return self.respond_to? "action_#{action.to_s.tr(" ", "_")}"
     end # method has_action?
+    
+    def list_own_aliases
+      aliases = Array.new
+      self.methods.each do |method|
+        method = method.to_s
+        if method =~ /^action_alias_/
+          aliases << method.gsub(/^action_alias_/,'')
+        end # if
+      end # each
+      aliases.sort
+    end # method list_own_aliases
     
     def list_own_actions
       actions = Array.new

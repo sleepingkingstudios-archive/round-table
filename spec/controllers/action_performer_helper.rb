@@ -142,4 +142,38 @@ shared_examples "an ActionPerformer" do
     subject.has_action?(:do_something).should be true
     subject.has_action?(:do_nothing).should be false
   end # it can check if it responds to an action
+  
+  describe "defining singleton actions" do
+    it "expects a name and a block" do
+      expect {
+        subject.define_singleton_action :wibble do
+          :wobble
+        end # action
+      }.not_to raise_error
+    end # end it
+    
+    it "requires a block" do
+      expect {
+        subject.define_singleton_action :no_op
+      }.to raise_error ArgumentError
+    end # it requires a block
+    
+    context "(defined)" do
+      before :each do
+        subject.define_singleton_action :wibble do; end
+      end # before :each
+      
+      describe "executing singleton actions" do
+        it { expect { subject.execute_action :wibble }.not_to raise_error }
+      end # describe executing singleton actions
+      
+      describe "listing singleton actions" do
+        it { subject.list_own_actions.should include "wibble" }
+      end # describe listing singleton actions
+      
+      describe "introspecting singleton actions" do
+        it { subject.has_action?(:wibble).should be true }
+      end # introspecting singleton actions
+    end # context (defined)
+  end # describe defining singleton actions
 end # an ActionPerformer
