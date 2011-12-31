@@ -138,7 +138,7 @@ describe RoundTable::Controllers::DelegateController do
       } # listener :text_output
       
       %w(Foo Bar).each do |str|
-        mock.should_receive(:call).with("#{str} is a metasyntactic variable.")
+        mock.should_receive(:call).with("#{str} is a metasyntactic variable.\n")
       end # each
       
       @subject.execute_action :foo, "FooPerformer"

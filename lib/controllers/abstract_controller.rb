@@ -3,11 +3,13 @@
 require 'controllers/controllers'
 require 'controllers/action_delegate'
 require 'debug/logger_service'
+require 'util/text_processor'
 require 'util/tree_collection'
 
 module RoundTable::Controllers
   class AbstractController < ActionDelegate
     include RoundTable::Debug::LoggerService
+    include RoundTable::Util::TextProcessor
     include RoundTable::Util::TreeCollection
     
     def initialize

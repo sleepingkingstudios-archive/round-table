@@ -4,13 +4,11 @@ require 'controllers/controllers'
 require 'controllers/action_performer'
 require 'events/event'
 require 'events/event_dispatcher'
-require 'util/text_processor'
 
 module RoundTable::Controllers
   class ActionDelegate < ActionPerformer
     include RoundTable::Events
     include RoundTable::Events::EventDispatcher
-    include RoundTable::Util::TextProcessor
     
     def to_key
       self.to_s
@@ -30,15 +28,11 @@ module RoundTable::Controllers
     end # method gets
     
     def puts(string)
-      dispatch_event Event.new :text_output, :text => self.break_text(string, 80), :bubbles => :true
+      dispatch_event Event.new :text_output, :text => "#{string}\n", :bubbles => :true
     end # method puts
     
     def print(string)
-      dispatch_event Event.new :text_output, :text => self.break_text(string, 80), :bubbles => :true, :strip_whitespace => :true
+      dispatch_event Event.new :text_output, :text => string, :bubbles => :true
     end # method print
-    
-    ###################
-    # Executing Actions
-    
   end # class ActionDelegate
 end # module RoundTable::Controllers

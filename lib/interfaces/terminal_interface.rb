@@ -1,12 +1,14 @@
 # lib/interfaces/terminal_interface.rb
 
+require 'events/event_dispatcher'
 require 'interfaces/interfaces'
 require 'interfaces/text_interface'
-require 'events/event_dispatcher'
+require 'util/text_processor'
 
 module RoundTable::Interfaces
   class TerminalInterface < TextInterface
     include RoundTable::Events::EventDispatcher
+    include RoundTable::Util::TextProcessor
     
     def initialize(root_controller, input = $stdin, output = $stdout)
       super
@@ -21,11 +23,7 @@ module RoundTable::Interfaces
       @context_callbacks << callback
       
       callback = @root_controller.add_listener :text_output, Proc.new { |event|
-        if event[:strip_whitespace]
-          self.print event[:text]
-        else
-          self.puts event[:text]
-        end # if-else
+        self.print(self.break_text event[:text], 80)
       }, :references => self # add_listener :text_output
       @context_callbacks << callback
       

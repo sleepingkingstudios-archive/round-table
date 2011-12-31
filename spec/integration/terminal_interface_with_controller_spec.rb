@@ -32,9 +32,9 @@ describe "Integration" do
     end # the controller can request text from the interface
     
     it "the controller can send text to the interface to output" do
-      @output.should_receive(:puts).with("This is an output string.\n")
+      @output.should_receive(:print).with("This is an output string.\n")
       
-      @controller.puts "This is an output string.\n"
+      @controller.puts "This is an output string."
     end # the controller can send text to the interface to output
     
     it "the interface adds listeners to the new controller" do
@@ -58,7 +58,7 @@ describe "Integration" do
     
     it "exits the IO loop upon receiving a kill signal" do
       @input.stub(:gets) { "verb object" }
-      @output.should_receive(:puts)
+      @output.should_receive(:print)
       
       def kill_loop
         @interface.kill!
@@ -82,7 +82,7 @@ describe "Integration" do
     it "exits the IO loop upon confirmation of the quit action" do
       @input.stub(:gets).and_return("quit\n", "yes\n")
       @input.should_receive(:gets).twice
-      @output.should_receive(:puts).with(/\(yes\/no\)/)
+      @output.should_receive(:print).with(/\(yes\/no\)/)
       
       def kill_loop
         @interface.kill!
