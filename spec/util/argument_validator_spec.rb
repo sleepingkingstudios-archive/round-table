@@ -11,6 +11,8 @@ describe RoundTable::Util::ArgumentValidator do
   end # before :each
   subject { @validator }
   
+  let(:name) { "my_value" }
+  
   describe "expects 1..2 arguments" do
     let(:message) { /wrong number of arguments/i }
     
@@ -34,6 +36,8 @@ describe RoundTable::Util::ArgumentValidator do
     it { expect { subject.validate_argument nil }.to raise_error ArgumentError, message }
     it { expect { subject.validate_argument :sym }.not_to raise_error ArgumentError, message }
     it { expect { subject.validate_argument nil, :allow_nil? => true }.not_to raise_error ArgumentError }
+    
+    it { expect { subject.validate_argument nil, :as => name }.to raise_error ArgumentError, /#{name}/ }
   end # describe validates non-nil values
   
   describe "validates nil values" do
@@ -41,6 +45,8 @@ describe RoundTable::Util::ArgumentValidator do
     
     it { expect { subject.validate_argument :sym, :nil? => true }.to raise_error ArgumentError, message }
     it { expect { subject.validate_argument nil, :nil? => true }.not_to raise_error ArgumentError }
+    
+    it { expect { subject.validate_argument :sym, :nil? => true, :as => name }.to raise_error ArgumentError, /#{name}/ }
   end # describe validates nil values
   
   describe "validates single type" do
@@ -49,6 +55,8 @@ describe RoundTable::Util::ArgumentValidator do
     
     it { expect { subject.validate_argument ["ary"], :type => type }.to raise_error ArgumentError, message }
     it { expect { subject.validate_argument :sym, :type => type }.not_to raise_error ArgumentError }
+    
+    it { expect { subject.validate_argument ["ary"], :type => type, :as => name }.to raise_error ArgumentError, /#{name}/ }
   end # describe validates single type
   
   describe "validates array of types" do
@@ -59,5 +67,7 @@ describe RoundTable::Util::ArgumentValidator do
     it { expect { subject.validate_argument "str", :type => types }.not_to raise_error ArgumentError }
     it { expect { subject.validate_argument :sym, :type => types }.not_to raise_error ArgumentError }
     it { expect { subject.validate_argument 101, :type => types }.not_to raise_error ArgumentError }
+    
+    it { expect { subject.validate_argument ["ary"], :type => types, :as => name }.to raise_error ArgumentError, /#{name}/ }
   end # describe validates array of types
 end # describe ArgumentValidator

@@ -2,7 +2,7 @@
 
 =begin DESCRIPTION
   The ArgumentValidator provides a method to validate function arguments or
-  other values in a consistent, extensible fashion.
+  other values in a consistent fashion.
 =end
 
 require 'util/util'
@@ -19,7 +19,7 @@ module RoundTable::Util
       #   the argument's validity.
       #   @key :allow_nil? (optional) : if set to false (the default), raises
       #     an error for a nil value. Defaults to false.
-      #   @key :name (optional) : human-readable string describing the argument
+      #   @key :as (optional) : human-readable string describing the argument
       #     or value being validated. Defaults to "value".
       #   @key :nil? (optional) : if set to true, raises an error if the value
       #     is not nil. This overrides the behavior for the :allow_nil?
@@ -31,19 +31,19 @@ module RoundTable::Util
       raise ArgumentError.new("expected params to be Hash, received #{params.class}") unless
         params.is_a? Hash
       
-      config = { :allow_nil? => false, :name => "value" }
+      config = { :allow_nil? => false, :as => "value" }
       config.update(params) if params.is_a? Hash
       
       # validate not nil
-      raise ArgumentError.new("expected #{config[:name]} not to be nil") unless
+      raise ArgumentError.new("expected #{config[:as]} not to be nil") unless
         config[:allow_nil?] or config[:nil?] or !(arg.nil?)
       
       # validate nil
-      raise ArgumentError.new("expected #{config[:name]} to be nil") if
+      raise ArgumentError.new("expected #{config[:as]} to be nil") if
         config[:nil?] and !(arg.nil?)
       
       # validate type
-      raise ArgumentError.new("expected #{config[:name]} to be #{[config[:type]].flatten.join(" or ")}, received #{arg.class}") unless
+      raise ArgumentError.new("expected #{config[:as]} to be #{[config[:type]].flatten.join(" or ")}, received #{arg.class}") unless
         config[:type].nil? or
         [config[:type]].flatten.inject(false) { |memo, type| memo ||= arg.is_a? type }
       
