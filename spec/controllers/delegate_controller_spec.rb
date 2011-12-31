@@ -3,6 +3,7 @@
 require 'spec_helper'
 require 'controllers/action_delegate'
 require 'controllers/delegate_controller'
+require 'events/event_dispatcher'
 
 module RoundTable::Mock
   module Controllers; end
@@ -39,110 +40,111 @@ describe RoundTable::Controllers::DelegateController do
     end # module_eval
   end # after :each
   
-  ####################
-  # Managing Delegates
-  
-  it "can add delegates" do
-    delegate = FooPerformer.new
-    subject.add_delegate delegate
-    
-    event = Event.new :foo_event
-    
-    mock = double('callable')
-    mock.stub(:call)
-    mock.should_receive(:call).with(event)
-    
-    subject.add_listener :foo_event, Proc.new { |event|
-      mock.call event
-    } # listener :foo_event
-    
-    delegate.dispatch_event event
-  end # it can add delegates
-  
-  it "raises an error if delegate is not an ActionDelegate" do
-    expect { subject.add_delegate("delegate") }.to raise_error ArgumentError
-  end # it raises an error ...
-  
-  it "can remove delegates" do
-    delegate = FooPerformer.new
-    subject.add_delegate delegate
-    subject.remove_delegate delegate
-    
-    event = Event.new :foo_event
-    
-    mock = double('callable')
-    mock.stub(:call)
-    mock.should_not_receive(:call)
-    
-    subject.add_listener :foo_event, Proc.new { |event|
-      mock.call event
-    } # listener :foo_event
-    
-    delegate.dispatch_event event
-  end # it can remove delegates
-  
-  context "once initialized" do
+  context "(initialized)" do
     before :each do
-      @subject = described_class.new
-      
-      @foo = FooPerformer.new
-      @bar = BarPerformer.new
-      @baz = BazPerformer.new
-      
-      @subject.add_delegate @foo
-      @subject.add_delegate @bar
-      @subject.add_delegate @baz
+      @controller = described_class.new
+      @controller.define_singleton_action :bar do
+        self.puts "In England, these are called pubs."
+      end # action :bar
     end # before :each
+    subject { @controller }
     
-    #######################
-    # Introspecting Actions
+    let(:foo_performer) { FooPerformer.new }
+    let(:bar_performer) { BarPerformer.new }
+    let(:baz_performer) { BazPerformer.new }
     
-    it "lists its own actions, plus those of its delegates" do
-      actions = @subject.list_own_actions
-      actions += @foo.list_own_actions
-      actions += @bar.list_own_actions
-      actions += @baz.list_own_actions
+    describe "delegates" do    
+      describe "adding delegates" do
+        let(:key) {  }
       
-      actions = actions.uniq.sort
-      @subject.list_all_actions.should eq actions
-    end # it lists its own actions, plus those of its delegates
-    
-    it "lists delegates responding to an action" do
-      @subject.class.instance_eval do
-        action :foo do |*args|; end
-      end # class.instance_eval
+        it { expect { subject.add_delegate }.to raise_error ArgumentError, /wrong number/i }
+        it { expect { subject.add_delegate key }.to raise_error ArgumentError, /wrong number/i }
+        it { expect { subject.add_delegate key, nil }.to raise_error ArgumentError, /not to be nil/i }
+        it { expect { subject.add_delegate key, :foo }.to raise_error ArgumentError, /ActionDelegate/i }
+        it { expect { subject.add_delegate key, foo_performer }.not_to raise_error }
+      end # describe adding delegates
       
-      delegates = @subject.delegates_for(:foo)
-      delegates.should include(@subject)
-      delegates.should include(@foo)
-    end # it lists delegates responding to an action
-    
-    ###################
-    # Executing Actions
-    
-    it "passes actions to its delegates by key" do
-      @bar.class.instance_eval do
-        action :foo do |*args|
-          self.execute_action :bar, *args
-        end # action :foo
-      end # class_eval
-      
-      @subject.delegates_for(:foo).should include(@foo)
-      @subject.delegates_for(:foo).should include(@bar)
-      
-      mock = double('callable')
-      mock.stub(:call)
-      
-      @subject.add_listener :text_output, Proc.new { |event|
-        mock.call event[:text]
-      } # listener :text_output
-      
-      %w(Foo Bar).each do |str|
-        mock.should_receive(:call).with("#{str} is a metasyntactic variable.\n")
-      end # each
-      
-      @subject.execute_action :foo, "FooPerformer"
-      @subject.execute_action :foo, "BarPerformer"
-    end # it passes actions to its delegates by key do
+      context "(added)" do
+        let(:keys_and_delegates) {
+          { :foo => foo_performer,
+            :bar => bar_performer,
+            nil  => baz_performer
+          } # end Hash
+        } # end let
+        
+        before :each do
+          keys_and_delegates.each do |key, delegate|
+            subject.add_delegate key, delegate
+          end # each
+        end # before :each
+        
+        it { subject.should have_key :foo }
+        it { subject.should have_key :bar }
+        it { subject.should have_key nil }
+        
+        it { subject.should have_delegate foo_performer }
+        it { subject.should have_delegate bar_performer }
+        it { subject.should have_delegate baz_performer }
+        
+        describe "removing delegates" do
+          it { expect { subject.remove_delegate }.to raise_error ArgumentError, /wrong number/i }
+          it { expect { subject.remove_delegate nil }.to raise_error ArgumentError, /not to be nil/i }
+          it { expect { subject.remove_delegate :foo }.to raise_error ArgumentError, /ActionDelegate/i }
+          it { expect { subject.remove_delegate foo_performer }.not_to raise_error }
+          
+          it { expect { subject.remove_delegate_by_key }.to raise_error ArgumentError, /wrong number/i }
+          it { expect { subject.remove_delegate_by_key :wibble }.to raise_error ArgumentError, /no delegate with key/i }
+          it { expect { subject.remove_delegate_by_key :bar }.not_to raise_error }
+          it { expect { subject.remove_delegate_by_key nil }.not_to raise_error }
+        end # describe removing delegates
+        
+        context "(and removed)" do
+          before :each do
+            subject.remove_delegate foo_performer
+            subject.remove_delegate_by_key :bar
+            subject.remove_delegate_by_key nil
+          end # before :each
+          
+          it { subject.should_not have_key :foo }
+          it { subject.should_not have_key :bar }
+          it { subject.should_not have_key nil }
+          
+          it { subject.should_not have_delegate foo_performer }
+          it { subject.should_not have_delegate bar_performer }
+          it { subject.should_not have_delegate bar_performer }
+        end # context (and removed)
+
+        describe "introspecting actions" do
+          it { subject.delegates_for(:foo).should include foo_performer }
+          it { subject.delegates_for(:bar).should include bar_performer }
+          it { subject.delegates_for(:baz).should include baz_performer }
+          
+          it { subject.list_all_actions.should include *%w(foo bar baz) }
+        end # describe introspecting actions
+        
+        describe "executing delegated actions" do
+          def self.match_event(action, *args, &block)
+            it { "with action = #{action}, args = #{args}"
+              subject.add_listener :*, Proc.new { |event|
+                block.call(event)
+              } # end Proc.new
+              subject.execute_action action, *args
+            } # end it with action ... args ...
+          end # function match_event
+          
+          match_event :foo, "foo" do |event|
+            event[:text].should =~ /foo/i
+          end # match_event
+          
+          match_event :bar, "bar" do |event|
+            event[:text].should =~ /bar/i
+          end # match_event
+          
+          match_event :baz do |event|
+            event[:text].should =~ /baz/i
+          end # match_event
+        end # describe executing delegated actions
+      end # context (added)
+    end # describe delegates
   end # context initialized
 end # describe DelegateController

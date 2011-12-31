@@ -3,9 +3,12 @@
 require 'controllers/controllers'
 require 'controllers/action_delegate'
 require 'controllers/base_controller'
+require 'util/argument_validator'
 
 module RoundTable::Controllers
   class DelegateController < BaseController
+    include RoundTable::Util::ArgumentValidator
+    
     def initialize
       super
       
@@ -15,25 +18,40 @@ module RoundTable::Controllers
     ####################
     # Managing Delegates
     
-    def add_delegate(delegate)
-      raise ArgumentError.new("delegate must be an ActionDelegate") unless delegate.is_a? ActionDelegate
+    def add_delegate(key, delegate)
+      validate_argument key, :allow_nil? => true
+      validate_argument delegate, :as => "delegate", :type => ActionDelegate
       
       delegate.add_listener :*, Proc.new { |event|
         self.dispatch_event(event)
       }, :references => self
       
-      @delegates[delegate.to_key] = delegate
+      @delegates[key] = delegate
     end # method add_delegate
     
+    def has_delegate?(delegate)
+      @delegates.has_value? delegate
+    end # has_delegate?
+    
+    def has_key?(key)
+      @delegates.has_key? key
+    end # has_key?
+    
     def remove_delegate(delegate)
-      return unless @delegates.include? delegate.to_key
+      validate_argument delegate, :as => "delegate", :type => ActionDelegate
+      return unless self.has_delegate? delegate
       
       delegate.remove_listeners { |callback|
         callback.data[:references] == self
       } # remove_listeners
       
-      @delegates.delete(delegate.to_key)
+      @delegates.delete_if { |key, value| value === delegate }
     end # method remove_delegate
+    
+    def remove_delegate_by_key(key)
+      raise ArgumentError.new "no delegate with key #{key.inspect}" unless self.has_key? key
+      self.remove_delegate @delegates[key]
+    end # method remove_delegate_by_key
     
     ###################
     # Executing Actions
@@ -53,14 +71,7 @@ module RoundTable::Controllers
     # Introspecting Actions
     
     def delegates_for(action)
-      delegates = Array.new
-      
-      delegates << self if self.has_action? action
-      @delegates.each do |key, delegate|
-        delegates << delegate if delegate.has_action? action
-      end # each
-      
-      delegates
+      @delegates.values.select { |delegate| delegate.has_action? action }
     end # method delegates_for
     
     def list_all_actions
