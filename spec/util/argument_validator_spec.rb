@@ -55,6 +55,7 @@ describe RoundTable::Util::ArgumentValidator do
     
     it { expect { subject.validate_argument ["ary"], :type => type }.to raise_error ArgumentError, message }
     it { expect { subject.validate_argument :sym, :type => type }.not_to raise_error ArgumentError }
+    it { expect { subject.validate_argument nil, :type => type, :allow_nil? => true }.not_to raise_error }
     
     it { expect { subject.validate_argument ["ary"], :type => type, :as => name }.to raise_error ArgumentError, /#{name}/ }
   end # describe validates single type

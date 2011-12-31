@@ -18,7 +18,9 @@ module RoundTable::Util
       #   which determine what the value is checked against to determine
       #   the argument's validity.
       #   @key :allow_nil? (optional) : if set to false (the default), raises
-      #     an error for a nil value. Defaults to false.
+      #     an error for a nil value. If used with the :type param, returns
+      #     true even if NilClass is not among the listed types. Defaults to
+      #     false.
       #   @key :as (optional) : human-readable string describing the argument
       #     or value being validated. Defaults to "value".
       #   @key :nil? (optional) : if set to true, raises an error if the value
@@ -45,6 +47,7 @@ module RoundTable::Util
       # validate type
       raise ArgumentError.new("expected #{config[:as]} to be #{[config[:type]].flatten.join(" or ")}, received #{arg.class}") unless
         config[:type].nil? or
+        (arg.nil? and config[:allow_nil?]) or
         [config[:type]].flatten.inject(false) { |memo, type| memo ||= arg.is_a? type }
       
     end # validate_argument
