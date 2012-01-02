@@ -26,9 +26,13 @@ module RoundTable::Util
       #   @key :nil? (optional) : if set to true, raises an error if the value
       #     is not nil. This overrides the behavior for the :allow_nil?
       #     parameter. Defaults to false.
+      #   @key :respond_to? (optional) : if present, the value must respond to
+      #     the given message. If an array is given, the value must respond to
+      #     all of the given messages.
       #   @key :type (optional) : if present, the value must be of the provided
       #     type. Due to implementation, this is ignored for a type of nil; use
-      #     the nil? parameter instead to check for an (expected) nil value.
+      #     the nil? parameter instead to check for an (expected) nil value. If
+      #     an array is given, the value must be one of the given types.
       
       raise ArgumentError.new("expected params to be Hash, received #{params.class}") unless
         params.is_a? Hash
@@ -43,6 +47,12 @@ module RoundTable::Util
       # validate nil
       raise ArgumentError.new("expected #{config[:as]} to be nil") if
         config[:nil?] and !(arg.nil?)
+      
+      # validate responds to messages
+      [config[:respond_to?]].flatten.each do |message|
+        raise ArgumentError.new("expected #{config[:as]} to respond to :#{message}") unless
+          arg.respond_to? message
+      end unless config[:respond_to?].nil?
       
       # validate type
       raise ArgumentError.new("expected #{config[:as]} to be #{[config[:type]].flatten.join(" or ")}, received #{arg.class}") unless

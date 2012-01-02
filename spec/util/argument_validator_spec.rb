@@ -49,6 +49,15 @@ describe RoundTable::Util::ArgumentValidator do
     it { expect { subject.validate_argument :sym, :nil? => true, :as => name }.to raise_error ArgumentError, /#{name}/ }
   end # describe validates nil values
   
+  describe "validates messages" do
+    let(:messages) { [ :each, :map, :inject ] }
+    let(:mock_responder) { stub('responder').tap {|obj| obj.stub :each; obj.stub :map } }
+    
+    it { expect { subject.validate_argument ["ary"], :respond_to? => messages }.not_to raise_error }
+    it { expect { subject.validate_argument :sym, :respond_to? => messages }.to raise_error ArgumentError, /to respond to/ }
+    it { expect { subject.validate_argument mock_responder, :respond_to? => messages }.to raise_error ArgumentError, /to respond to :inject/ }
+  end # describe validates messages
+  
   describe "validates single type" do
     let(:type) { Symbol }
     let(:message) { /to be #{type}/i }
