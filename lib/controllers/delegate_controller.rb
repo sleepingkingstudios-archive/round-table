@@ -21,6 +21,7 @@ module RoundTable::Controllers
     def add_delegate(key, delegate)
       validate_argument key, :allow_nil? => true
       validate_argument delegate, :as => "delegate", :type => ActionDelegate
+      raise ArgumentError.new "delegate cannot be self" if delegate == self
       
       delegate.add_listener :*, Proc.new { |event|
         self.dispatch_event(event)
