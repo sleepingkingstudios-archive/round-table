@@ -58,8 +58,7 @@ module RoundTable::Util
       raise ArgumentError.new("expected #{config[:as]} to be #{[config[:type]].flatten.join(" or ")}, received #{arg.class}") unless
         config[:type].nil? or
         (arg.nil? and config[:allow_nil?]) or
-        [config[:type]].flatten.inject(false) { |memo, type| memo ||= arg.is_a? type }
-      
+        [config[:type]].flatten.inject(false) { |memo, type| memo || arg.is_a?(type) }      
     end # validate_argument
   end # module ArgumentValidator
 end # module RoundTable::Util

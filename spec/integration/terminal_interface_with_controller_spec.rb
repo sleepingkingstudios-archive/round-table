@@ -9,9 +9,14 @@ describe "Integration" do
     include RoundTable::Controllers
     include RoundTable::Interfaces
     
+    let(:input) {
+      input = mock('input')
+      input.tap { |obj| obj.stub :respond_to? do true end }
+      input.tap { |obj| obj.stub :gets }
+    }
+    
     before :each do
-      @input = double('input_stream')
-      @input.stub(:gets)
+      @input = input
       
       @output = double('output_stream')
       @output.stub(:puts)

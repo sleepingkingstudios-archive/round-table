@@ -8,13 +8,17 @@ describe RoundTable::Interfaces::TerminalInterface do
   include RoundTable::Controllers
   include RoundTable::Interfaces
   
+  let(:input) {
+    input = mock('input')
+    input.tap { |obj| obj.stub :respond_to? do true end }
+    input.tap { |obj| obj.stub :gets }
+  } # end let :input
+  
   before :each do
     @controller = AbstractController.new
   end # before :each
   
   it "runs an IO loop" do
-    input = double('input_stream')
-    input.stub(:gets)
     output = double('output_stream')
     output.stub(:print)
     output.stub(:puts)
