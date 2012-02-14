@@ -5,12 +5,9 @@ require 'controllers/abstract_controller'
 require 'interfaces/text_interface'
 
 describe RoundTable::Interfaces::TextInterface do
-  include RoundTable::Controllers
-  include RoundTable::Interfaces
-  
   let(:controller) {
     controller = mock('controller')
-    controller.tap { |obj| obj.stub :is_a? do |mod| mod == AbstractController end }
+    controller.tap { |obj| obj.stub :is_a? do |mod| mod == RoundTable::Controllers::AbstractController end }
   } # end let :controller
   
   let(:input) {

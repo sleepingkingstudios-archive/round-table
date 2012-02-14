@@ -7,7 +7,7 @@ describe RoundTable::Util::ArgumentValidator do
   include RoundTable::Util
   
   before :each do
-    @validator = Object.new.extend ArgumentValidator
+    @validator = Object.new.extend RoundTable::Util::ArgumentValidator
   end # before :each
   subject { @validator }
   

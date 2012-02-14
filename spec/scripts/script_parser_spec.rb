@@ -5,8 +5,8 @@ require 'scripts/scriptable'
 require 'scripts/script_parser'
 
 describe RoundTable::Scripts::ScriptParser do
-  include RoundTable::Scripts
-  
+  pending "Not sure whether this will be implemented or not..."
+=begin
   def mock_scriptable(&block)
     recv = Object.new
     recv.extend Scriptable
@@ -209,4 +209,5 @@ describe RoundTable::Scripts::ScriptParser do
     
     parsed.call(@receiver).should == :bizzle
   end # it can parse chained property accessors
+=end
 end # describe ScriptParser

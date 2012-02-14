@@ -5,9 +5,6 @@ require 'controllers/abstract_controller'
 require 'interfaces/terminal_interface'
 
 describe RoundTable::Interfaces::TerminalInterface do
-  include RoundTable::Controllers
-  include RoundTable::Interfaces
-  
   let(:input) {
     input = mock('input')
     input.tap { |obj| obj.stub :respond_to? do true end }
@@ -15,7 +12,7 @@ describe RoundTable::Interfaces::TerminalInterface do
   } # end let :input
   
   before :each do
-    @controller = AbstractController.new
+    @controller = RoundTable::Controllers::AbstractController.new
   end # before :each
   
   it "runs an IO loop" do
@@ -23,7 +20,7 @@ describe RoundTable::Interfaces::TerminalInterface do
     output.stub(:print)
     output.stub(:puts)
     
-    @interface = TerminalInterface.new @controller, input, output
+    @interface = RoundTable::Interfaces::TerminalInterface.new @controller, input, output
     
     def kill_loop
       @interface.kill!

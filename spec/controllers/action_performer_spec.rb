@@ -5,6 +5,8 @@ require 'controllers/action_performer_helper'
 require 'controllers/action_performer'
 
 describe RoundTable::Controllers::ActionPerformer do
+  subject { Class.new(described_class).new }
+  
   it_behaves_like "an ActionPerformer"
   
   it "raises an error for unrecognized actions" do

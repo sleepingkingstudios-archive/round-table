@@ -24,8 +24,8 @@ describe RoundTable::Debug::Logger do
   it "orders log levels" do
     log_levels.each_index do |index|
       level = log_levels[index]
-      Logger::LogLevels.index(level).should eq(index)
-      Logger.level_to_index(level).should eq(index)
+      RoundTable::Debug::Logger::LogLevels.index(level).should eq(index)
+      RoundTable::Debug::Logger.level_to_index(level).should eq(index)
     end # each_index
   end # it orders log levels
   
@@ -131,4 +131,4 @@ describe RoundTable::Debug::Logger do
       subject.send level, "This is a(n) #{level} message."
     end # each
   end # it accepts a concise syntax for logging messages by level
-end # spec Logger
+end # describe Logger

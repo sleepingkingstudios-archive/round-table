@@ -4,8 +4,6 @@ require 'spec_helper'
 require 'debug/file_logger'
 
 describe RoundTable::Debug::FileLogger do
-  include RoundTable::Debug
-  
   before :each do
     @log_path = "#{File.dirname __FILE__}/log_tmp.txt"
     @log_file = File.new @log_path, "w+"
@@ -17,16 +15,16 @@ describe RoundTable::Debug::FileLogger do
   end # after :each
   
   it "must be passed a log file in the constructor" do
-    expect { FileLogger.new }.to raise_error ArgumentError
-    expect { FileLogger.new nil }.to raise_error ArgumentError
-    FileLogger.new @log_path
+    expect { RoundTable::Debug::FileLogger.new }.to raise_error ArgumentError
+    expect { RoundTable::Debug::FileLogger.new nil }.to raise_error ArgumentError
+    RoundTable::Debug::FileLogger.new @log_path
   end # it must be passed a log file ...
   
   it "writes to a log file" do
     debug_message = "This is a debug message."
     info_message  = "This is an info message."
     warn_message  = "This is a warning message."
-    subject = FileLogger.new @log_path
+    subject = RoundTable::Debug::FileLogger.new @log_path
     
     subject.debug   debug_message
     subject.info    info_message

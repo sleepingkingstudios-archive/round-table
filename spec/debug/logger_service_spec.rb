@@ -4,20 +4,6 @@ require 'spec_helper'
 require 'debug/logger'
 require 'debug/logger_service'
 
-RSpec::Matchers.define :be_a_logger do
-  match do |actual|
-    actual.is_a? RoundTable::Debug::Logger
-  end # match
-  
-  failure_message_for_should do |actual|
-    "expected #{actual.inspect} to be a logger"
-  end # failure_message
-  
-  failure_message_for_should_not do |actual|
-    "expected #{actual.inspect} not to be a logger"
-  end # failure_message
-end # define be_a_logger
-
 describe RoundTable::Debug::LoggerService do
   include RoundTable::Debug
   
@@ -30,11 +16,11 @@ describe RoundTable::Debug::LoggerService do
     RoundTable::Debug::Logger::StoredLogger.logger = stored_logger
   end # after :all
   
-  subject { Object.new.extend LoggerService }
+  subject { Object.new.extend RoundTable::Debug::LoggerService }
   
   it "provides access to a logger" do
     subject.should respond_to(:logger)
-    subject.logger.should be_a_logger
+    subject.logger.should be_a RoundTable::Debug::Logger
   end # it provides access to a logger
   
   it "can be given a new logger" do
@@ -42,7 +28,7 @@ describe RoundTable::Debug::LoggerService do
     
     stored_logger = subject.logger
     
-    custom_logger = Logger.new
+    custom_logger = RoundTable::Debug::Logger.new
     subject.logger = custom_logger
     subject.logger.should eq(custom_logger)
     
@@ -56,7 +42,7 @@ describe RoundTable::Debug::LoggerService do
     mock_io.should_receive(:puts).with(/#{message}/)
     
     stored_logger = subject.logger
-    subject.logger = Logger.new :output => mock_io
+    subject.logger = RoundTable::Debug::Logger.new :output => mock_io
     
     subject.instance_eval do
       logger.log(:info, message)

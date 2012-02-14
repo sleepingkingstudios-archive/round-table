@@ -11,30 +11,7 @@ describe RoundTable::Controllers::BaseController do
   include RoundTable::Controllers
   include RoundTable::Mock::Controllers
   
-  def clear_mock
-    RoundTable::Mock::Controllers.module_eval do
-      remove_const :MockController if const_defined? :MockController
-    end # module_eval
-  end # function clear_mock
-  
-  def define_mock(base_class)
-    clear_mock
-    
-    RoundTable::Mock::Controllers.module_eval do
-      klass = Class.new base_class
-      const_set :MockController, klass
-    end # module_eval
-  end # function define_mock
-  
-  before :each do
-    define_mock(described_class)
-  end # before :each
-  
-  after :each do
-    clear_mock
-  end # after :each
-  
-  subject { MockController.new }
+  subject { Class.new(described_class).new }
   
   describe "#actions" do
     it "has a help action" do

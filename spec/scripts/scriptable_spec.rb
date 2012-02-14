@@ -9,8 +9,8 @@ module RoundTable::Mock
 end # module RoundTable::Mock
 
 describe RoundTable::Scripts::Scriptable do
-  include RoundTable::Scripts
-  
+  pending "Not sure whether this will be implemented or not..."
+=begin
   subject {
     klass = Class.new
     klass.instance_eval do
@@ -149,4 +149,5 @@ describe RoundTable::Scripts::Scriptable do
       subject.script.call_global(:foo, :bar, "baz")
     end # it can define and call global functions
   end # context when it has been initialized
+=end
 end # describe Scriptable

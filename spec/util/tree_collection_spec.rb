@@ -3,9 +3,9 @@
 require 'spec_helper'
 require 'util/tree_collection'
 
-module RoundTable::Mock
-  module Util
-    class MockTreeCollection
+describe RoundTable::Util::TreeCollection do
+  let(:mock_tree_collection_class) {
+    Class.new do
       include RoundTable::Util::TreeCollection
       
       def initialize(name)
@@ -14,24 +14,18 @@ module RoundTable::Mock
         @children = []
       end # method initialize
       
-      def to_s
-        @name.capitalize
-      end # method to_s
+      def to_s; @name.capitalize; end
       
       attr_accessor :name
-    end # class MockTreeCollection
-  end # module Util
-end # module Mock
-
-describe RoundTable::Util::TreeCollection do
-  include RoundTable::Mock::Util
+    end # anonymous class
+  } # end let :mock_tree_collection_class
   
   before :each do
-    @weapons    = MockTreeCollection.new :weapons
-    @swords     = MockTreeCollection.new :swords
-    @daito      = MockTreeCollection.new :daito
-    @shoto      = MockTreeCollection.new :shoto
-    @fireworks  = MockTreeCollection.new :fireworks
+    @weapons    = mock_tree_collection_class.new :weapons
+    @swords     = mock_tree_collection_class.new :swords
+    @daito      = mock_tree_collection_class.new :daito
+    @shoto      = mock_tree_collection_class.new :shoto
+    @fireworks  = mock_tree_collection_class.new :fireworks
   end # before :each
   
   def define_relationships

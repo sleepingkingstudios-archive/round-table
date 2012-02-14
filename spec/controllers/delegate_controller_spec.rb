@@ -14,34 +14,15 @@ describe RoundTable::Controllers::DelegateController do
   include RoundTable::Events
   include RoundTable::Mock::Controllers
   
-  before :each do
-    RoundTable::Mock::Controllers.module_eval do
-      [:foo, :bar, :baz].each do |sym|
-        str = sym.to_s.capitalize
-        remove_const "#{str}Performer" if const_defined? "#{str}Performer"
-        
-        klass = Class.new RoundTable::Controllers::ActionDelegate
-        klass.class_eval {
-          action sym do |*args|
-            self.puts "#{str} is a metasyntactic variable."
-          end # action :foo
-        } # end class_eval
-        
-        const_set "#{str}Performer", klass
-      end # each
-    end # module_eval
-  end # before :all
-  
-  after :each do
-    RoundTable::Mock::Controllers.module_eval do
-      [:FooPerformer, :BarPerformer, :BazPerformer].each do |sym|
-        remove_const sym if const_defined? sym
-      end # each
-    end # module_eval
-  end # after :each
+  def delegate_for(symbol)
+    Class.new(RoundTable::Controllers::ActionDelegate) do
+      action symbol do |*args| self.puts "#{symbol} is a metasyntactic variable." end
+    end # anonymous class
+  end # method delegate_for
   
   context "(initialized)" do
     before :each do
+      @class = Class.new(described_class)
       @controller = described_class.new
       @controller.define_singleton_action :bar do
         self.puts "In England, these are called pubs."
@@ -49,9 +30,9 @@ describe RoundTable::Controllers::DelegateController do
     end # before :each
     subject { @controller }
     
-    let(:foo_performer) { FooPerformer.new }
-    let(:bar_performer) { BarPerformer.new }
-    let(:baz_performer) { BazPerformer.new }
+    [:foo, :bar, :baz].each do
+      |symbol| let(:"#{symbol}_performer") { delegate_for(symbol).new }
+    end # each
     
     describe "delegates" do    
       describe "adding delegates" do

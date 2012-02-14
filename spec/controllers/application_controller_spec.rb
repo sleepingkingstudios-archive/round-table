@@ -5,8 +5,6 @@ require 'controllers/abstract_controller'
 require 'controllers/application_controller'
 
 describe RoundTable::Controllers::ApplicationController do
-  include RoundTable::Controllers
-  
   __vendor_path__ = VENDOR_PATH
   before :all do
     Object.send :remove_const, :VENDOR_PATH
@@ -19,7 +17,7 @@ describe RoundTable::Controllers::ApplicationController do
   end # after :all
   
   it "is a kind of AbstractController" do
-    subject.kind_of?(AbstractController).should be true
+    subject.kind_of?(RoundTable::Controllers::AbstractController).should be true
   end # it is a kind of AbstractController
   
   it "has a quit action that dispatches a quit event" do

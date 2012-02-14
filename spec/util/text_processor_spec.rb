@@ -10,10 +10,7 @@ module RoundTable::Mock::Util
 end # module RoundTable::Mock::Util
 
 describe RoundTable::Util::TextProcessor do
-  include RoundTable::Util
-  include RoundTable::Mock::Util
-  
-  subject { MockTextProcessor.new }
+  subject { Object.new.extend RoundTable::Util::TextProcessor }
   
   ##################
   # Tokenize Strings
@@ -85,9 +82,9 @@ describe RoundTable::Util::TextProcessor do
     camel_string = "ThisIsSnakeCase"
     space_string = "This is snake-case"
     
-    TextProcessor.to_snake_case(snake_string).should =~ /^#{snake_string}$/
-    TextProcessor.to_snake_case(camel_string).should =~ /^#{snake_string}$/
-    TextProcessor.to_snake_case(space_string).should =~ /^#{snake_string}$/
+    RoundTable::Util::TextProcessor.to_snake_case(snake_string).should =~ /^#{snake_string}$/
+    RoundTable::Util::TextProcessor.to_snake_case(camel_string).should =~ /^#{snake_string}$/
+    RoundTable::Util::TextProcessor.to_snake_case(space_string).should =~ /^#{snake_string}$/
   end # it converts ... to snake_case
   
   it "converts unknown case to CamelCase" do
@@ -95,8 +92,8 @@ describe RoundTable::Util::TextProcessor do
     camel_string = "ThisIsCamelCase"
     space_string = "This is camel-case"
     
-    TextProcessor.to_camel_case(snake_string).should =~ /^#{camel_string}$/
-    TextProcessor.to_camel_case(camel_string).should =~ /^#{camel_string}$/
-    TextProcessor.to_camel_case(space_string).should =~ /^#{camel_string}$/
+    RoundTable::Util::TextProcessor.to_camel_case(snake_string).should =~ /^#{camel_string}$/
+    RoundTable::Util::TextProcessor.to_camel_case(camel_string).should =~ /^#{camel_string}$/
+    RoundTable::Util::TextProcessor.to_camel_case(space_string).should =~ /^#{camel_string}$/
   end # it converts ... to CamelCase
 end # describe TextProcessor

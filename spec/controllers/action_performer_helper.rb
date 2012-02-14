@@ -3,41 +3,9 @@
 require 'spec_helper'
 require 'controllers/action_performer'
 
-module RoundTable::Mock
-  module Controllers; end
-end # module RoundTable::Mock
-
 shared_examples "an ActionPerformer" do
-  include RoundTable::Controllers
-  include RoundTable::Mock::Controllers
-  
-  def clear_mock
-    RoundTable::Mock::Controllers.module_eval do
-      remove_const :MockActionPerformer if const_defined? :MockActionPerformer
-    end # module_eval
-  end # function clear_mock
-  
-  def define_mock(base_class)
-    clear_mock
-    
-    RoundTable::Mock::Controllers.module_eval do
-      klass = Class.new base_class
-      const_set :MockActionPerformer, klass
-    end # module_eval
-  end # function define_mock
-  
-  before :each do
-    define_mock(described_class)
-  end # before :each
-  
-  after :each do
-    clear_mock
-  end # after :each
-  
-  subject { MockActionPerformer.new }
-  
   it "is an ActionPerformer" do
-    described_class.should <= ActionPerformer
+    described_class.should <= RoundTable::Controllers::ActionPerformer
   end # it is an ActionPerformer
   
   ##################
@@ -176,4 +144,5 @@ shared_examples "an ActionPerformer" do
       end # introspecting singleton actions
     end # context (defined)
   end # describe defining singleton actions
+
 end # an ActionPerformer
